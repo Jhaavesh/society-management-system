@@ -20,7 +20,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: society-os-lockfiles
-          path: |
-            web-admin/package-lock.json
-            backend/package-lock.json
-            mobile-app/package-lock.json
+          path: '**/package-lock.json'
