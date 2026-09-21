@@ -31,4 +31,9 @@ jobs:
           node-version: 20
       - run: node --check backend/src/server.js
       - run: node --check backend/src/routes/dashboard.js
-
+      - run: node --check backend/src/routes/auth.js
+      - run: node --check backend/src/routes/flats.js
+      - run: node --check backend/src/routes/maintenance.js
+      - run: node --check backend/src/routes/payments.js
+      - run: node --check backend/src/routes/visitors.js
+      - run: node --check mobile-app/api.js
