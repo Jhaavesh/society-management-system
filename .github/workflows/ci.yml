@@ -68,3 +68,73 @@ jobs:
         working-directory: mobile-app
       - run: npx expo export --platform web --output-dir .expo-export
         working-directory: mobile-app
+name: Validate SocietyOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web-admin/package-lock.json
+      - run: npm ci
+        working-directory: web-admin
+      - run: npm run build
+        working-directory: web-admin
+
+  backend-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+        working-directory: backend
+      - run: node --check src/server.js
+        working-directory: backend
+      - run: node --check src/app.js
+        working-directory: backend
+      - run: node --check src/routes/dashboard.js
+        working-directory: backend
+      - run: node --check src/routes/auth.js
+        working-directory: backend
+      - run: node --check src/routes/flats.js
+        working-directory: backend
+      - run: node --check src/routes/maintenance.js
+        working-directory: backend
+      - run: node --check src/routes/payments.js
+        working-directory: backend
+      - run: node --check src/routes/complaints.js
+        working-directory: backend
+      - run: node --check src/routes/visitors.js
+        working-directory: backend
+      - run: node --check src/utils/fields.js
+        working-directory: backend
+      - run: node --check api.js
+        working-directory: mobile-app
+      - run: npm test
+        working-directory: backend
+
+  mobile-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile-app/package-lock.json
+      - run: npm ci
+        working-directory: mobile-app
+      - run: npx expo export --platform web --output-dir .expo-export
+        working-directory: mobile-app
