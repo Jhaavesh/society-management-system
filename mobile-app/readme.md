@@ -1,12 +1,19 @@
 # Resident mobile app
 
-This folder is reserved for the React Native / Expo resident app. It will use the same Express API as the admin dashboard.
+This folder contains the Expo / React Native resident app starter. It will use the same Express API as the admin dashboard.
 
-Planned first screens:
+Current starter screens:
 
-- Resident login and profile
+- Resident profile
 - Maintenance bills and payment history
-- Complaint creation and status
 - Society notices and events
-- Visitor approval
-- Parking and emergency contacts
+- Home overview with quick actions
+
+Run locally:
+
+```bash
+npm install
+npm start
+```
+
+The current UI uses demo content and is deliberately API-ready. Next work is resident authentication, live bill/notice data, complaint creation, visitor approval, parking, and push notifications.
