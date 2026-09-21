@@ -21,6 +21,19 @@ export async function getResidentData(token, societyId) {
   return { bills, notices, visitors };
 }
 
+export function createComplaint(token, societyId, flatId, category, description) {
+  return writeResidentData(token, "/complaints", { societyId, flatId, category, description, priority: "medium" });
+}
+
+export function createVisitor(token, societyId, flatId, visitorName, visitorMobile, visitDate) {
+  return writeResidentData(token, "/visitors", { societyId, flatId, visitorName, visitorMobile, purpose: "Guest visit", visitDate });
+}
+
+async function writeResidentData(token, path, payload) {
+  const response = await fetch(`${API_URL}${path}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+  return readResponse(response);
+}
+
 async function readResponse(response) {
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body.message || "Unable to load resident data");
