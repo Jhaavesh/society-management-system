@@ -2,6 +2,7 @@ import { Router } from "express";
 import MaintenanceBill from "../models/maintenancebill.js";
 import Flat from "../models/flat.js";
 import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
+import { pickAllowedFields } from "../utils/fields.js";
 
 const router = Router();
 router.use(requireAuth);
@@ -10,7 +11,10 @@ const managers = ["platform_admin", "society_admin", "accountant"];
 router.get("/", requireSocietyAccess, async (req, res, next) => {
   try {
     const filter = { societyId: req.societyId };
-    if (req.user.role === "resident") filter.flatId = req.user.flatId;
+    if (req.user.role === "resident") {
+      if (!req.user.flatId) return res.status(403).json({ message: "Resident is not assigned to a flat" });
+      filter.flatId = req.user.flatId;
+    }
     else if (req.query.flatId) filter.flatId = req.query.flatId;
     if (req.query.status) filter.status = req.query.status;
     res.json(await MaintenanceBill.find(filter).populate("flatId", "flatNumber wing").sort({ dueDate: -1 }).lean());
@@ -26,7 +30,10 @@ router.post("/", requireRole(...managers), requireSocietyAccess, async (req, res
 });
 router.patch("/:id", requireRole(...managers), requireSocietyAccess, async (req, res, next) => {
   try {
-    const bill = await MaintenanceBill.findOneAndUpdate({ _id: req.params.id, societyId: req.societyId }, req.body, { new: true, runValidators: true });
+    const { values, unknown } = pickAllowedFields(req.body, ["month", "year", "amount", "dueDate", "status"]);
+    if (unknown.length) return res.status(400).json({ message: `Unsupported bill fields: ${unknown.join(", ")}` });
+    if (!Object.keys(values).length) return res.status(400).json({ message: "At least one editable bill field is required" });
+    const bill = await MaintenanceBill.findOneAndUpdate({ _id: req.params.id, societyId: req.societyId }, values, { new: true, runValidators: true });
     if (!bill) return res.status(404).json({ message: "Bill not found" });
     res.json(bill);
   } catch (error) { next(error); }

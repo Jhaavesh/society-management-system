@@ -10,7 +10,10 @@ const managers = ["platform_admin", "society_admin", "accountant"];
 router.get("/", requireSocietyAccess, async (req, res, next) => {
   try {
     const filter = { societyId: req.societyId };
-    if (req.user.role === "resident") filter._id = req.user.flatId;
+    if (req.user.role === "resident") {
+      if (!req.user.flatId) return res.status(403).json({ message: "Resident is not assigned to a flat" });
+      filter._id = req.user.flatId;
+    }
     else if (req.query.buildingId) filter.buildingId = req.query.buildingId;
     res.json(await Flat.find(filter).populate("buildingId", "name").sort({ flatNumber: 1 }).lean());
   } catch (error) { next(error); }
