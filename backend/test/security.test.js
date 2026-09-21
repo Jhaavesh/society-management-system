@@ -70,7 +70,7 @@ test("PATCH routes reject protected fields", async () => {
   const complaint = await Complaint.create({ societyId: fixtures.society._id, flatId: fixtures.flat._id, userId: fixtures.resident._id, category: "Water", description: "Low pressure" });
   const visitor = await Visitor.create({ societyId: fixtures.society._id, flatId: fixtures.flat._id, visitorName: "Guest", visitDate: new Date() });
   for (const [path, body] of [[`/api/maintenance/${bill._id}`, { societyId: new mongoose.Types.ObjectId() }], [`/api/complaints/${complaint._id}`, { userId: new mongoose.Types.ObjectId() }], [`/api/visitors/${visitor._id}`, { flatId: new mongoose.Types.ObjectId() }]]) {
-    const response = await request(app).patch(path).set("Authorization", `Bearer ${fixtures.managerToken}`).query({ societyId: fixtures.society._id }).send(body);
+     const response = await request(app).patch(path).set("Authorization", `Bearer ${fixtures.managerToken}`).query({ societyId: String(fixtures.society._id) }).send(body);
     assert.equal(response.status, 400);
   }
 });
