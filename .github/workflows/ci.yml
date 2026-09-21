@@ -61,4 +61,4 @@ jobs:
           cache: npm
           cache-dependency-path: mobile-app/package-lock.json
       - run: npm ci --prefix "$GITHUB_WORKSPACE/mobile-app"
-      - run: npm --prefix "$GITHUB_WORKSPACE/mobile-app" exec -- expo export --platform web --output-dir "$GITHUB_WORKSPACE/mobile-app/.expo-export"
+      - run: npm --prefix "$GITHUB_WORKSPACE/mobile-app" exec -- expo config --type public
