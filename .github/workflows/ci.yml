@@ -9,9 +9,6 @@ on:
 jobs:
   web-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web-admin
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,7 +17,9 @@ jobs:
           cache: npm
           cache-dependency-path: web-admin/package-lock.json
       - run: npm ci
+        working-directory: web-admin
       - run: npm run build
+        working-directory: web-admin
 
   backend-syntax:
     runs-on: ubuntu-latest
@@ -29,8 +28,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
       - run: npm ci
         working-directory: backend
       - run: node --check src/server.js
@@ -53,16 +50,13 @@ jobs:
         working-directory: backend
       - run: node --check src/utils/fields.js
         working-directory: backend
-      - run: node --check ../mobile-app/api.js
-        working-directory: backend
+      - run: node --check api.js
+        working-directory: mobile-app
       - run: npm test
         working-directory: backend
 
   mobile-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: mobile-app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -71,4 +65,6 @@ jobs:
           cache: npm
           cache-dependency-path: mobile-app/package-lock.json
       - run: npm ci
+        working-directory: mobile-app
       - run: npx expo export --platform web --output-dir .expo-export
+        working-directory: mobile-app
