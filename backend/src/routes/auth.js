@@ -15,7 +15,7 @@ router.post("/login", async (req, res, next) => {
     }
     const payload = { sub: user._id.toString(), name: user.name, role: user.role, flatId: user.flatId?.toString() || null, societyIds: user.societyIds.map(String) };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, societyIds: user.societyIds } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, flatId: user.flatId, societyIds: user.societyIds } });
   } catch (error) { next(error); }
 });
 
