@@ -11,12 +11,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install --package-lock-only --ignore-scripts
-        working-directory: web-admin
-      - run: npm install --package-lock-only --ignore-scripts
-        working-directory: backend
-      - run: npm install --package-lock-only --ignore-scripts
-        working-directory: mobile-app
+      - run: npm --prefix web-admin install --package-lock-only --ignore-scripts
+      - run: npm --prefix backend install --package-lock-only --ignore-scripts
+      - run: npm --prefix mobile-app install --package-lock-only --ignore-scripts
       - run: |
           mkdir -p lockfiles
           cp web-admin/package-lock.json lockfiles/web-admin.package-lock.json
