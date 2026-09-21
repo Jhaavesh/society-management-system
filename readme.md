@@ -8,7 +8,7 @@ Multi-society management platform based on MERN.
 - `web-admin/`: React + Vite admin dashboard starter
 - `mobile-app/`: planned React Native resident app
 
-The backend already exposes protected foundation routes for `/api/auth`, `/api/societies`, `/api/dashboard`, `/api/buildings`, `/api/flats`, `/api/residents`, `/api/maintenance`, `/api/payments`, `/api/complaints`, `/api/notices`, and `/api/visitors`. The web dashboard keeps demo data until a token is present, and `web-admin/src/lib/api.js` is the shared API layer for the next wiring step.
+The backend already exposes protected foundation routes for `/api/auth`, `/api/societies`, `/api/dashboard`, `/api/buildings`, `/api/flats`, `/api/residents`, `/api/maintenance`, `/api/payments`, `/api/complaints`, `/api/notices`, and `/api/visitors`. The web dashboard has an admin login screen, keeps demo data available through preview mode, and loads society/dashboard data from the API when a token is present. `web-admin/src/lib/api.js` is the shared API layer.
 
 ## Local setup
 
