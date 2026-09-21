@@ -1,0 +1,39 @@
+name: Validate SocietyOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web-admin/package.json
+      - run: npm install
+      - run: npm run build
+
+  backend-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --check backend/src/server.js
+      - run: node --check backend/src/routes/dashboard.js
+      - run: node --check backend/src/routes/auth.js
+      - run: node --check backend/src/routes/flats.js
+      - run: node --check backend/src/routes/maintenance.js
+      - run: node --check backend/src/routes/payments.js
+      - run: node --check backend/src/routes/visitors.js
+      - run: node --check mobile-app/api.js
