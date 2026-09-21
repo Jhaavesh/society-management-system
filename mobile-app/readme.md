@@ -8,6 +8,8 @@ Current starter screens:
 - Maintenance bills and payment history
 - Society notices and events
 - Home overview with quick actions
+- Resident login with API session
+- Complaint and visitor request forms
 
 Run locally:
 
@@ -16,4 +18,4 @@ npm install
 npm start
 ```
 
-The current UI uses demo content and is deliberately API-ready. Next work is resident authentication, live bill/notice data, complaint creation, visitor approval, parking, and push notifications.
+The app uses `EXPO_PUBLIC_API_URL` for the Express API and keeps a preview mode for UI review without a database. Live bills, notices, complaints, and visitor requests use the resident's society and flat scope. Next work is payment gateway integration, parking workflows, push notifications, and durable session storage.
