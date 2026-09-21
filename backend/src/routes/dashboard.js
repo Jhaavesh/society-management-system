@@ -6,10 +6,10 @@ import Flat from "../models/flat.js";
 import MaintenanceBill from "../models/maintenancebill.js";
 import Payment from "../models/payment.js";
 import Complaint from "../models/complaint.js";
-import { requireAuth, requireSocietyAccess } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
 
 const router = Router();
-router.get("/:societyId", requireAuth, requireSocietyAccess, async (req, res, next) => {
+router.get("/:societyId", requireAuth, requireRole("platform_admin", "society_admin", "accountant", "security"), requireSocietyAccess, async (req, res, next) => {
   try {
     const [society, residents, homes, bills, paidBills, payments, openRequests] = await Promise.all([
       Society.findById(req.societyId).lean(),

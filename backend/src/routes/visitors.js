@@ -10,7 +10,8 @@ const managers = ["platform_admin", "society_admin", "security"];
 router.get("/", requireSocietyAccess, async (req, res, next) => {
   try {
     const filter = { societyId: req.societyId };
-    if (req.query.status) filter.status = req.query.status;
+    if (req.user.role === "resident") filter.flatId = req.user.flatId;
+    else if (req.query.status) filter.status = req.query.status;
     res.json(await Visitor.find(filter).populate("flatId", "flatNumber wing").sort({ visitDate: -1 }).lean());
   } catch (error) { next(error); }
 });

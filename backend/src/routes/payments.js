@@ -10,7 +10,8 @@ const managers = ["platform_admin", "society_admin", "accountant"];
 router.get("/", requireSocietyAccess, async (req, res, next) => {
   try {
     const filter = { societyId: req.societyId };
-    if (req.query.billId) filter.billId = req.query.billId;
+    if (req.user.role === "resident") filter.flatId = req.user.flatId;
+    else if (req.query.billId) filter.billId = req.query.billId;
     res.json(await Payment.find(filter).populate("billId flatId", "month year flatNumber").sort({ paymentDate: -1 }).lean());
   } catch (error) { next(error); }
 });
