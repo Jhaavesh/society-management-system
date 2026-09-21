@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "SocietyOS Resident",
+    "slug": "society-os-resident",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"]
+  }
+}
