@@ -6,6 +6,7 @@ const schema = new mongoose.Schema({
   month: { type: Number, min: 1, max: 12, required: true },
   year: { type: Number, required: true },
   amount: { type: Number, min: 0, required: true },
+  amountPaid: { type: Number, min: 0, default: 0 },
   dueDate: { type: Date, required: true },
   status: { type: String, enum: ["pending", "paid", "overdue"], default: "pending", index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
