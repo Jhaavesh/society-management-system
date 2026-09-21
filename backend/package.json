@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "test": "node --test test/**/*.test.js"
   },
   "engines": { "node": ">=20" },
   "dependencies": {
@@ -20,5 +21,5 @@
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0"
   },
-  "devDependencies": { "nodemon": "^3.1.9" }
+  "devDependencies": { "mongodb-memory-server": "^10.1.4", "nodemon": "^3.1.9", "supertest": "^7.0.0" }
 }
