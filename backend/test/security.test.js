@@ -13,6 +13,7 @@ import MaintenanceBill from "../src/models/maintenancebill.js";
 import Payment from "../src/models/payment.js";
 import Complaint from "../src/models/complaint.js";
 import Visitor from "../src/models/visitor.js";
+import Building from "../src/models/building.js";
 
 process.env.JWT_SECRET = "test-secret";
 let mongo;
@@ -97,8 +98,9 @@ test("payments support partial balances and reject overpaying or duplicate refer
 
 async function createFixtures() {
   const society = await Society.create({ name: "Test Heights", city: "Test City" });
-  const flat = await Flat.create({ societyId: society._id, flatNumber: "A-101", wing: "A" });
-  const otherFlat = await Flat.create({ societyId: society._id, flatNumber: "B-202", wing: "B" });
+  const building = await Building.create({ societyId: society._id, name: "Main Building", floors: 2 });
+  const flat = await Flat.create({ societyId: society._id, buildingId: building._id, flatNumber: "A-101", wing: "A" });
+  const otherFlat = await Flat.create({ societyId: society._id, buildingId: building._id, flatNumber: "B-202", wing: "B" });
   const passwordHash = await bcrypt.hash("password", 4);
   const resident = await User.create({ name: "Test Resident", email: "resident@example.com", passwordHash, role: "resident", societyIds: [society._id], flatId: flat._id });
   const manager = await User.create({ name: "Test Manager", email: "manager@example.com", passwordHash, role: "society_admin", societyIds: [society._id] });
