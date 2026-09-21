@@ -17,7 +17,12 @@ jobs:
         working-directory: backend
       - run: npm install --package-lock-only --ignore-scripts
         working-directory: mobile-app
+      - run: |
+          mkdir -p lockfiles
+          cp web-admin/package-lock.json lockfiles/web-admin.package-lock.json
+          cp backend/package-lock.json lockfiles/backend.package-lock.json
+          cp mobile-app/package-lock.json lockfiles/mobile-app.package-lock.json
       - uses: actions/upload-artifact@v4
         with:
           name: society-os-lockfiles
-          path: '**/package-lock.json'
+          path: lockfiles
