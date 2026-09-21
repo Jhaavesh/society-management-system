@@ -6,7 +6,7 @@ Multi-society management platform based on MERN.
 
 - `backend/`: Node.js + Express + MongoDB API foundation
 - `web-admin/`: React + Vite admin dashboard starter
-- `mobile-app/`: planned React Native resident app
+- `mobile-app/`: Expo/React Native resident app starter
 
 Product behavior and the mobile-first requirement are documented in `PRODUCT_REQUIREMENTS.md`.
 
@@ -22,6 +22,8 @@ The backend already exposes protected foundation routes for `/api/auth`, `/api/s
 6. Run `npm run dev` to start the API and React admin dashboard.
 
 The dashboard opens at `http://localhost:5173` and the API health check is `http://localhost:5000/health`.
+
+The resident starter runs with `npm install` and `npm start` from `mobile-app/`. It currently includes Home, Bills, Notices, and Profile tabs with touch-friendly cards sized for mobile screens. It uses demo content until the shared API authentication flow is connected.
 
 ## Deployment plan
 
@@ -40,4 +42,4 @@ Every user has society memberships. Protected API routes verify that the request
 
 Owner profile: `https://github.com/Jhaavesh`
 
-Create an empty private repository first. Then this folder can be connected and pushed without putting database passwords or API keys into GitHub.
+The working repository is `https://github.com/Jhaavesh/society-management-system`. Keep secrets in environment variables; never commit `.env` files or production credentials.
