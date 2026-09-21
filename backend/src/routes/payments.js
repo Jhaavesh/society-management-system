@@ -23,14 +23,16 @@ router.get("/", requireSocietyAccess, async (req, res, next) => {
 router.post("/", requireRole(...managers), requireSocietyAccess, async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
-    const { billId, flatId, amountPaid, method, transactionRef } = req.body;
-    const amount = Number(amountPaid);
+     const { billId, flatId, amountPaid, method, transactionRef } = req.body;
+     const amount = Number(amountPaid);
+     const ref = String(transactionRef || "").trim() || undefined;
     if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ message: "amountPaid must be greater than zero" });
     if (!billId || !flatId) return res.status(400).json({ message: "billId and flatId are required" });
     let payment;
     await session.withTransaction(async () => {
-      const bill = await MaintenanceBill.findOne({ _id: billId, flatId, societyId: req.societyId }).session(session);
-      if (!bill) throw Object.assign(new Error("Bill does not belong to this society or flat"), { statusCode: 400 });
+       const bill = await MaintenanceBill.findOne({ _id: billId, flatId, societyId: req.societyId }).session(session);
+       if (!bill) throw Object.assign(new Error("Bill does not belong to this society or flat"), { statusCode: 400 });
+       if (ref && await Payment.exists({ transactionRef: ref }).session(session)) throw Object.assign(new Error("transactionRef has already been recorded"), { statusCode: 409 });
       const totals = await Payment.aggregate([
         { $match: { billId: bill._id } },
         { $group: { _id: null, total: { $sum: "$amountPaid" } } }
@@ -39,8 +41,7 @@ router.post("/", requireRole(...managers), requireSocietyAccess, async (req, res
       const remaining = Math.max(0, Number(bill.amount) - paid);
       if (remaining <= 0) throw Object.assign(new Error("Bill is already fully paid"), { statusCode: 409 });
       if (amount > remaining) throw Object.assign(new Error(`Payment exceeds remaining balance of ${remaining}`), { statusCode: 400 });
-      const ref = String(transactionRef || "").trim() || undefined;
-      const created = await Payment.create([{ billId: bill._id, flatId, amountPaid: amount, method, transactionRef: ref, societyId: req.societyId, recordedBy: req.user.sub }], { session });
+       const created = await Payment.create([{ billId: bill._id, flatId, amountPaid: amount, method, transactionRef: ref, societyId: req.societyId, recordedBy: req.user.sub }], { session });
       const nextPaid = Math.round((paid + amount) * 100) / 100;
       await MaintenanceBill.updateOne({ _id: bill._id }, { $set: { amountPaid: nextPaid, status: nextPaid >= Number(bill.amount) ? "paid" : "pending" } }, { session });
       payment = created[0];
