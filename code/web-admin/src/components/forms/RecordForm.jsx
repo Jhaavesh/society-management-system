@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Input } from '../ui/Input.jsx';
 import { Button } from '../ui/Button.jsx';
 
@@ -18,7 +18,7 @@ export function RecordForm({ fields, onSubmit, onCancel }) {
     const newErrors = {};
     fields.forEach((field) => {
       if (field.required && (!formData[field.name] || formData[field.name].toString().trim() === '')) {
-        newErrors[field.name] = \\ is required\;
+        newErrors[field.name] = field.label + ' is required';
       }
     });
     setErrors(newErrors);

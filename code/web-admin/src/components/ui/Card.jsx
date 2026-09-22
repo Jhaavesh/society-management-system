@@ -1,6 +1,6 @@
-﻿export function Card({ title, subtitle, children, className = '' }) {
+export function Card({ title, subtitle, children, className = '' }) {
   return (
-    <div className={\card \\}>
+    <div className={'card ' + className}>
       {(title || subtitle) && (
         <div className='card-header' style={{ marginBottom: '16px' }}>
           {title && <h3 style={{ margin: '0 0 4px', fontSize: '16px' }}>{title}</h3>}

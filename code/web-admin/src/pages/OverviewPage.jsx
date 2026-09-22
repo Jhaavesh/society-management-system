@@ -1,7 +1,7 @@
-﻿import { useSocieties } from '../../hooks/useSocieties.js';
-import { useDashboard } from '../../hooks/useDashboard.js';
-import { formatCurrency, formatNumber, formatPercentage } from '../../utils/formatters.js';
-import { formatDate } from '../../utils/date.js';
+import { useSocieties } from '../hooks/useSocieties.js';
+import { useDashboard } from '../hooks/useDashboard.js';
+import { formatCurrency, formatNumber, formatPercentage } from '../utils/formatters.js';
+import { formatDate } from '../utils/date.js';
 import { Card } from '../components/ui/Card.jsx';
 import { KpiCard } from '../components/ui/KpiCard.jsx';
 import { Table } from '../components/ui/Table.jsx';

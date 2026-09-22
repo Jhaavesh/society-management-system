@@ -1,7 +1,7 @@
-﻿import { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth.js';
-import { useSocieties } from '../../hooks/useSocieties.js';
-import { useDashboard } from '../../hooks/useDashboard.js';
+import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth.js';
+import { useSocieties } from '../hooks/useSocieties.js';
+import { useDashboard } from '../hooks/useDashboard.js';
 import { Sidebar } from '../components/layout/Sidebar.jsx';
 import { TopBar } from '../components/layout/TopBar.jsx';
 import { OverviewPage } from './OverviewPage.jsx';

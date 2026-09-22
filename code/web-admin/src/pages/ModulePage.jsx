@@ -1,8 +1,8 @@
-﻿import { useState } from 'react';
-import { useModuleData } from '../../hooks/useModuleData.js';
-import { formatCurrency, formatNumber, formatPercentage } from '../../utils/formatters.js';
-import { formatDate, formatDateTime, getRelativeTime } from '../../utils/date.js';
-import { recordToRow } from '../../utils/recordToRow.js';
+import { useState } from 'react';
+import { useModuleData } from '../hooks/useModuleData.js';
+import { formatCurrency, formatNumber, formatPercentage } from '../utils/formatters.js';
+import { formatDate, formatDateTime, getRelativeTime } from '../utils/date.js';
+import { recordToRow } from '../utils/recordToRow.js';
 import { Card } from '../components/ui/Card.jsx';
 import { Table } from '../components/ui/Table.jsx';
 import { Modal } from '../components/ui/Modal.jsx';

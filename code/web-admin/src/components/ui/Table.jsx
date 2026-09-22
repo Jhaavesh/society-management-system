@@ -1,4 +1,4 @@
-﻿export function Table({ headers, rows, emptyMessage = 'No data', className = '' }) {
+export function Table({ headers, rows, emptyMessage = 'No data', className = '' }) {
   if (!rows || rows.length === 0) {
     return (
       <div className='table-wrap'>
@@ -10,7 +10,7 @@
   }
 
   return (
-    <div className={\	able-wrap \\}>
+    <div className={'table-wrap ' + className}>
       <table>
         <thead>
           <tr>

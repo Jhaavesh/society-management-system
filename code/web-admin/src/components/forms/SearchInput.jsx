@@ -1,4 +1,4 @@
-﻿import { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { Icon } from '../ui/Icon.jsx';
 
 export function SearchInput({ value, onChange, placeholder = 'Search...', className = '' }) {
@@ -14,7 +14,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search...', classN
   };
 
   return (
-    <div className={\search-wrapper \\} style={{ position: 'relative', width: '100%' }}>
+    <div className={'search-wrapper ' + className} style={{ position: 'relative', width: '100%' }}>
       <Icon name='search' style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }} />
       <input
         ref={inputRef}

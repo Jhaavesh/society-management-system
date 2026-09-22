@@ -1,4 +1,4 @@
-﻿export function Avatar({ name, size = 36, className = '' }) {
+export function Avatar({ name, size = 36, className = '' }) {
   const initials = name
     ?.split(' ')
     .map((n) => n[0])
@@ -15,7 +15,7 @@
 
   return (
     <div
-      className={\vatar \\}
+      className={'avatar ' + className}
       style={{
         width: size,
         height: size,

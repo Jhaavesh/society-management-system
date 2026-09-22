@@ -1,89 +1,105 @@
-import { useEffect, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
-import * as SecureStore from "expo-secure-store";
-import { StatusBar } from "expo-status-bar";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { createComplaint, createVisitor, getResidentData, login } from "./api";
+﻿// App.js - New entry point with providers
+import { useEffect, useState } from 'react';
+import { SafeAreaView, StatusBar, StyleSheet, Text, View, Alert } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { TabNavigator } from './src/navigation/TabNavigator';
+import { LoginScreen } from './src/screens/LoginScreen';
+import { getResidentData, createComplaint, createVisitor } from './src/services/api';
+import { Theme } from './src/types';
+import * as SecureStore from 'expo-secure-store';
+import { SESSION_KEY } from './src/types';
 
-const theme = { navy: "#111b31", blue: "#6572ef", ink: "#172033", muted: "#7b8496", line: "#e9edf3", canvas: "#f7f8fb", mint: "#43c6a5", amber: "#f4b45b", rose: "#ef7184" };
-const SESSION_KEY = "societyOS.resident.session";
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: Theme.canvas },
+  loading: { flex: 1, backgroundColor: Theme.navy, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { color: '#fff' },
+});
 
 export default function App() {
-  const [session, setSession] = useState(null);
-  const [hydrating, setHydrating] = useState(true);
-  useEffect(() => {
-    SecureStore.getItemAsync(SESSION_KEY).then((raw) => raw && setSession(JSON.parse(raw))).catch(() => {}).finally(() => setHydrating(false));
-  }, []);
-  async function handleLogin(next) {
-    setSession(next);
-    if (next?.token) await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(next));
-  }
-  async function handleLogout() {
-    await SecureStore.deleteItemAsync(SESSION_KEY).catch(() => {});
-    setSession(null);
-  }
-  if (hydrating) return <SafeAreaView style={styles.safe}><StatusBar style="light" /><View style={styles.loading}><Text style={styles.loadingText}>Loading your home...</Text></View></SafeAreaView>;
-  if (!session) return <SafeAreaView style={styles.safe}><StatusBar style="light" /><Login onLogin={handleLogin} /></SafeAreaView>;
-  return <ResidentShell session={session} onLogout={handleLogout} />;
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <AppContent />
+      </NavigationContainer>
+    </AuthProvider>
+  );
 }
 
-function ResidentShell({ session, onLogout }) {
-  const [tab, setTab] = useState("Home");
+function AppContent() {
+  const { session, hydrating, login, logout } = useAuth();
   const [data, setData] = useState(null);
-  const [loadError, setLoadError] = useState("");
+  const [loadError, setLoadError] = useState('');
+
   useEffect(() => {
-    const societyId = session.user?.societyIds?.[0];
-    if (!session.token || !societyId) return;
-    getResidentData(session.token, societyId).then(setData).catch((error) => setLoadError(error.message));
+    const societyId = session?.user?.societyIds?.[0];
+    if (!session?.token || !societyId) return;
+    getResidentData(session.token, societyId)
+      .then(setData)
+      .catch((error) => setLoadError(error.message));
   }, [session]);
-  const societyName = data?.society?.name || "Your society";
-  const firstName = session.user?.name?.split(" ")[0] || "Resident";
-  const content = tab === "Home" ? <Home data={data} onNavigate={setTab} /> : tab === "Bills" ? <Bills data={data} /> : tab === "Notices" ? <Notices data={data} /> : tab === "Requests" ? <Requests session={session} data={data} /> : <Profile session={session} data={data} onLogout={onLogout} />;
-  return <SafeAreaView style={styles.safe}><StatusBar style="light" /><View style={styles.header}><View><Text style={styles.kicker}>{societyName.toUpperCase()}</Text><Text style={styles.headerTitle}>Good morning, {firstName}</Text></View><View style={styles.headerAvatar}><Text style={styles.headerAvatarText}>{initials(session.user?.name)}</Text></View></View>{loadError ? <Text style={styles.syncError}>{loadError}</Text> : null}<ScrollView contentContainerStyle={styles.scroll}>{content}</ScrollView><View style={styles.tabs}>{[["Home", "grid"], ["Bills", "card"], ["Notices", "notifications"], ["Requests", "add-circle"], ["Profile", "person"]].map(([name, icon]) => <TouchableOpacity style={styles.tab} key={name} onPress={() => setTab(name)}><Ionicons name={icon} size={20} color={tab === name ? theme.blue : "#9ca5b6"} /><Text style={[styles.tabText, tab === name && styles.tabTextActive]}>{name}</Text></TouchableOpacity>)}</View></SafeAreaView>;
-}
 
-function Login({ onLogin }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  async function submit() {
-    setBusy(true); setError("");
-    try { await onLogin(await login(email, password)); } catch (requestError) { setError(requestError.message); } finally { setBusy(false); }
+  const handleLogin = async (newSession: any) => {
+    await login(newSession);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setData(null);
+  };
+
+  const handleSubmitComplaint = async (title: string, detail: string) => {
+    const societyId = session?.user?.societyIds?.[0];
+    const flatId = session?.user?.flatId;
+    if (!session?.token || !societyId || !flatId) throw new Error('Missing session data');
+    await createComplaint(session.token, societyId, flatId, title, detail);
+    // Refresh data after submission
+    const refreshed = await getResidentData(session.token, societyId);
+    setData(refreshed);
+  };
+
+  const handleSubmitVisitor = async (title: string, detail: string) => {
+    const societyId = session?.user?.societyIds?.[0];
+    const flatId = session?.user?.flatId;
+    if (!session?.token || !societyId || !flatId) throw new Error('Missing session data');
+    await createVisitor(session.token, societyId, flatId, title, detail, new Date().toISOString());
+    const refreshed = await getResidentData(session.token, societyId);
+    setData(refreshed);
+  };
+
+  const onNavigate = (tab: string) => {
+    // Navigation is handled by tab bar, but can be used for deep linking
+  };
+
+  if (hydrating) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <StatusBar style="light" />
+        <View style={styles.loading}>
+          <Text style={styles.loadingText}>Loading your home...</Text>
+        </View>
+      </SafeAreaView>
+    );
   }
-  return <ScrollView contentContainerStyle={styles.loginPage} keyboardShouldPersistTaps="handled"><View style={styles.loginBrand}><View style={styles.loginLogo}><Ionicons name="home" size={27} color="#fff" /></View><Text style={styles.loginBrandTitle}>SocietyOS</Text><Text style={styles.loginBrandText}>Everything about your society, in one place.</Text></View><View style={styles.loginCard}><Text style={styles.screenTitle}>Welcome home</Text><Text style={styles.screenSubtitle}>Sign in with your resident account.</Text><Text style={styles.inputLabel}>Email address</Text><TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor="#a6adbb" autoCapitalize="none" keyboardType="email-address" /><Text style={styles.inputLabel}>Password</Text><TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="Your password" placeholderTextColor="#a6adbb" secureTextEntry /><TouchableOpacity style={styles.loginButton} onPress={submit} disabled={busy}><Text style={styles.loginButtonText}>{busy ? "Signing in..." : "Sign in"}</Text><Ionicons name="arrow-forward" size={17} color="#fff" /></TouchableOpacity>{error ? <Text style={styles.loginError}>{error}</Text> : null}<TouchableOpacity style={styles.previewButton} onPress={() => onLogin({ preview: true, user: { name: "Preview Resident" } })}><Text style={styles.previewText}>Preview the resident app</Text></TouchableOpacity></View><Text style={styles.loginFoot}>Your society administrator manages access.</Text></ScrollView>;
+
+  if (!session) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <StatusBar style="light" />
+        <LoginScreen onLogin={handleLogin} />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar style="light" />
+      <TabNavigator
+        session={session}
+        data={data}
+        onNavigate={onNavigate}
+        onLogout={handleLogout}
+      />
+    </SafeAreaView>
+  );
 }
-
-function Home({ data, onNavigate }) {
-  const flat = data?.flat;
-  const due = data?.bills?.find((bill) => bill.status !== "paid");
-  return <><View style={styles.welcome}><View><Text style={styles.welcomeKicker}>YOUR HOME</Text><Text style={styles.welcomeTitle}>{flat?.flatNumber || "Your flat"}</Text><Text style={styles.welcomeText}>{flat ? `${flat.wing || ""} · Resident home` : "Sign in to load your flat"}</Text><Text style={styles.mutedLight}>{data ? "Live data synced" : "Preview mode"}</Text></View><Ionicons name="home" size={42} color="#cfd4ff" /></View><SectionHead title="This month" action="See bills" onPress={() => onNavigate("Bills")} /><View style={styles.billCard}><View style={styles.billIcon}><Ionicons name="card-outline" size={20} color={theme.blue} /></View><View style={styles.billCopy}><Text style={styles.cardLabel}>Maintenance bill</Text><Text style={styles.billAmount}>{formatAmount(due)}</Text><Text style={styles.muted}>{due ? `Due ${formatDate(due.dueDate)}` : "No pending bill"}</Text></View><View style={styles.pending}><Text style={styles.pendingText}>{due ? "Pending" : "Clear"}</Text></View></View><View style={styles.quickGrid}><Quick icon="chatbubble-ellipses-outline" label="Raise complaint" color={theme.rose} onPress={() => onNavigate("Requests")} /><Quick icon="person-add-outline" label="Add visitor" color={theme.mint} onPress={() => onNavigate("Requests")} /><Quick icon="document-text-outline" label="View notices" color={theme.amber} onPress={() => onNavigate("Notices")} /><Quick icon="car-outline" label="Parking" color={theme.blue} onPress={() => onNavigate("Profile")} /></View><SectionHead title="Latest notice" action="View all" onPress={() => onNavigate("Notices")} /><View style={styles.noticeCard}><View style={styles.noticeMark}><Ionicons name="megaphone-outline" size={18} color={theme.blue} /></View><View style={styles.noticeCopy}><Text style={styles.noticeTitle}>{data?.notices?.[0]?.title || "No notices yet"}</Text><Text style={styles.muted}>{data?.notices?.[0] ? formatDate(data.notices[0].createdAt) : "Your society notices will appear here"}</Text></View><Ionicons name="chevron-forward" size={18} color="#aab1bf" /></View></>;
-}
-
-function Bills({ data }) {
-  const bills = data?.bills || [];
-  const due = bills.find((bill) => bill.status !== "paid");
-  const fallback = [{ month: 8, year: 2026, amount: 3450, status: "paid" }, { month: 7, year: 2026, amount: 3450, status: "paid" }];
-  return <><ScreenHeading eyebrow="FINANCE" title="My bills" subtitle="Keep your maintenance payments on track." /><View style={styles.totalCard}><Text style={styles.mutedLight}>Total due</Text><Text style={styles.totalAmount}>{formatAmount(due)}</Text><Text style={styles.mutedLight}>{due ? `${due.month}/${due.year}` : "No outstanding balance"}</Text><View style={[styles.payButton, { opacity: 0.65 }]}><Text style={styles.payButtonText}>Online payment gateway pending</Text></View></View>{(bills.length ? bills : fallback).map((bill) => <BillRow key={bill._id || `${bill.month}-${bill.year}`} month={`${bill.month}/${bill.year}`} amount={formatAmount(bill)} status={bill.status} tone={bill.status === "paid" ? "paid" : "pending"} />)}{data?.payments?.length ? <><Text style={styles.sectionTitle}>Payment history</Text>{data.payments.map((payment) => <BillRow key={payment._id} month={formatDate(payment.paymentDate)} amount={formatAmount({ amount: payment.amountPaid })} status={payment.method || "Recorded"} tone="paid" />)}</> : null}</>;
-}
-
-function Notices({ data }) { const notices = data?.notices || []; return <><ScreenHeading eyebrow="COMMUNITY" title="Notices" subtitle="Stay in the loop with your society." /><View style={styles.filterRow}><Text style={styles.filterActive}>All notices</Text><Text style={styles.filter}>Events</Text><Text style={styles.filter}>Maintenance</Text></View>{(notices.length ? notices : [{ _id: "preview", title: "No live notices yet", content: "Your society announcements will appear here." }]).map((notice) => <View style={styles.noticeListCard} key={notice._id}><View style={styles.noticeTop}><Text style={styles.noticeTag}>Society notice</Text><Text style={styles.muted}>{formatDate(notice.createdAt)}</Text></View><Text style={styles.noticeTitle}>{notice.title}</Text><Text style={styles.noticeBody}>{notice.content}</Text></View>)}</>; }
-
-function Requests({ session, data }) {
-  const [kind, setKind] = useState("complaint"); const [title, setTitle] = useState(""); const [detail, setDetail] = useState(""); const [sent, setSent] = useState(""); const [busy, setBusy] = useState(false);
-  async function submit() { const societyId = session.user?.societyIds?.[0]; const flatId = session.user?.flatId; if (!session.token) return setSent("Sign in to submit a live request."); if (!societyId || !flatId || !title || !detail) return setSent("Please complete both fields."); setBusy(true); setSent(""); try { if (kind === "complaint") await createComplaint(session.token, societyId, flatId, title, detail); else await createVisitor(session.token, societyId, flatId, title, detail, new Date().toISOString()); setSent(kind === "complaint" ? "Complaint submitted to your society team." : "Visitor request sent to security."); setTitle(""); setDetail(""); } catch (error) { setSent(error.message); } finally { setBusy(false); } }
-  return <><ScreenHeading eyebrow="HELP DESK" title="Requests" subtitle="Raise a complaint or let security know about a visitor." /><View style={styles.requestToggle}><TouchableOpacity style={[styles.requestChoice, kind === "complaint" && styles.requestChoiceActive]} onPress={() => setKind("complaint")}><Text style={[styles.requestChoiceText, kind === "complaint" && styles.requestChoiceTextActive]}>Complaint</Text></TouchableOpacity><TouchableOpacity style={[styles.requestChoice, kind === "visitor" && styles.requestChoiceActive]} onPress={() => setKind("visitor")}><Text style={[styles.requestChoiceText, kind === "visitor" && styles.requestChoiceTextActive]}>Visitor</Text></TouchableOpacity></View><View style={styles.formCard}><Text style={styles.inputLabel}>{kind === "complaint" ? "Category" : "Visitor name"}</Text><TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={kind === "complaint" ? "Plumbing, security..." : "Guest name"} placeholderTextColor="#a6adbb" /><Text style={styles.inputLabel}>{kind === "complaint" ? "What needs attention?" : "Mobile number"}</Text><TextInput style={styles.input} value={detail} onChangeText={setDetail} placeholder={kind === "complaint" ? "Describe the issue" : "10 digit mobile number"} placeholderTextColor="#a6adbb" keyboardType={kind === "visitor" ? "phone-pad" : "default"} multiline={kind === "complaint"} /><TouchableOpacity style={styles.loginButton} onPress={submit} disabled={busy}><Text style={styles.loginButtonText}>{busy ? "Sending..." : kind === "complaint" ? "Submit complaint" : "Send visitor request"}</Text><Ionicons name="arrow-forward" size={17} color="#fff" /></TouchableOpacity>{sent ? <Text style={styles.formMessage}>{sent}</Text> : null}</View><Text style={styles.sectionTitle}>My visitors</Text>{(data?.visitors || []).length ? data.visitors.map((visitor) => <View style={styles.noticeCard} key={visitor._id}><View style={styles.noticeMark}><Ionicons name="person-outline" size={18} color={theme.mint} /></View><View style={styles.noticeCopy}><Text style={styles.noticeTitle}>{visitor.visitorName}</Text><Text style={styles.muted}>{formatDate(visitor.visitDate)} · {visitor.status}</Text></View></View>) : <Text style={styles.emptyText}>No visitor requests yet.</Text>}</>;
-}
-
-function Profile({ session, data, onLogout }) { const user = session.user || {}; return <><ScreenHeading eyebrow="ACCOUNT" title="My profile" subtitle="Your resident details and preferences." /><View style={styles.profileCard}><View style={styles.profileLarge}><Text style={styles.profileLargeText}>{initials(user.name)}</Text></View><Text style={styles.profileName}>{user.name || "Resident"}</Text><Text style={styles.muted}>{user.role || "resident"} · {data?.flat?.flatNumber || "Flat not assigned"}</Text></View>{[["phone-portrait-outline", "Contact details", user.email || "Email not available"], ["home-outline", "My home", data?.flat?.flatNumber || "Flat details unavailable"], ["notifications-outline", "Notifications", "Push and email alerts"], ["help-circle-outline", "Help centre", "Get support from society admin"]].map(([icon, title, subtitle]) => <View style={styles.profileRow} key={title}><View style={styles.profileRowIcon}><Ionicons name={icon} size={19} color={theme.blue} /></View><View style={styles.profileRowCopy}><Text style={styles.profileRowTitle}>{title}</Text><Text style={styles.muted}>{subtitle}</Text></View></View>)}<TouchableOpacity style={styles.logoutButton} onPress={onLogout}><Text style={styles.logoutText}>Sign out</Text></TouchableOpacity></>;
-}
-
-function formatAmount(item) { const amount = Number(item?.amount ?? item?.amountPaid); return Number.isFinite(amount) ? `₹${amount.toLocaleString("en-IN")}` : "₹0"; }
-function formatDate(value) { if (!value) return "Date unavailable"; const date = new Date(value); return Number.isNaN(date.getTime()) ? "Date unavailable" : date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }); }
-function initials(name = "Resident") { return name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase(); }
-function SectionHead({ title, action, onPress }) { return <View style={styles.sectionHead}><Text style={styles.sectionTitle}>{title}</Text><TouchableOpacity onPress={onPress}><Text style={styles.link}>{action}</Text></TouchableOpacity></View>; }
-function ScreenHeading({ eyebrow, title, subtitle }) { return <View style={styles.screenHeading}><Text style={styles.kicker}>{eyebrow}</Text><Text style={styles.screenTitle}>{title}</Text><Text style={styles.screenSubtitle}>{subtitle}</Text></View>; }
-function Quick({ icon, label, color, onPress }) { return <TouchableOpacity style={styles.quick} onPress={onPress}><View style={[styles.quickIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={20} color={color} /></View><Text style={styles.quickLabel}>{label}</Text></TouchableOpacity>; }
-function BillRow({ month, amount, status, tone }) { return <View style={styles.billRow}><View style={styles.billRowIcon}><Ionicons name="receipt-outline" size={18} color={theme.blue} /></View><View style={styles.billCopy}><Text style={styles.cardLabel}>{month}</Text><Text style={styles.muted}>{amount}</Text></View><Text style={[styles.billStatus, tone === "paid" && styles.billPaid]}>{status}</Text></View>; }
-
-const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: theme.canvas }, loading: { flex: 1, backgroundColor: theme.navy, justifyContent: "center", alignItems: "center" }, loadingText: { color: "#fff" }, header: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 18, backgroundColor: theme.navy, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, kicker: { color: "#8f9cbd", fontSize: 10, letterSpacing: 1.1, fontWeight: "700" }, headerTitle: { color: "#fff", fontSize: 20, fontWeight: "700", marginTop: 5 }, headerAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#6673ef", justifyContent: "center", alignItems: "center" }, headerAvatarText: { color: "#fff", fontWeight: "700", fontSize: 12 }, syncError: { color: theme.rose, backgroundColor: "#fff", padding: 8, fontSize: 11, textAlign: "center" }, scroll: { padding: 20, paddingBottom: 110 }, loginPage: { flexGrow: 1, padding: 24, backgroundColor: theme.navy, justifyContent: "center" }, loginBrand: { alignItems: "center", marginBottom: 28 }, loginLogo: { width: 58, height: 58, borderRadius: 18, backgroundColor: theme.blue, justifyContent: "center", alignItems: "center", marginBottom: 13 }, loginBrandTitle: { color: "#fff", fontSize: 27, fontWeight: "700" }, loginBrandText: { color: "#aeb9d3", fontSize: 12, marginTop: 7, textAlign: "center" }, loginCard: { backgroundColor: "#fff", borderRadius: 20, padding: 20 }, screenHeading: { marginBottom: 22 }, screenTitle: { color: theme.ink, fontSize: 29, fontWeight: "700", marginTop: 6 }, screenSubtitle: { color: theme.muted, fontSize: 13, lineHeight: 19, marginTop: 7 }, inputLabel: { color: theme.ink, fontSize: 11, fontWeight: "700", marginTop: 18, marginBottom: 7 }, input: { borderWidth: 1, borderColor: theme.line, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 12, color: theme.ink, fontSize: 13 }, loginButton: { backgroundColor: theme.blue, borderRadius: 11, padding: 14, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 22 }, loginButtonText: { color: "#fff", fontSize: 13, fontWeight: "700" }, loginError: { color: theme.rose, fontSize: 11, textAlign: "center", marginTop: 10 }, previewButton: { alignItems: "center", padding: 13, marginTop: 2 }, previewText: { color: theme.blue, fontSize: 11, fontWeight: "700" }, loginFoot: { color: "#8795b4", fontSize: 11, textAlign: "center", marginTop: 18 }, welcome: { padding: 20, borderRadius: 18, backgroundColor: theme.blue, flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }, welcomeKicker: { color: "#cfd4ff", fontSize: 10, letterSpacing: 1 }, welcomeTitle: { color: "#fff", fontSize: 28, fontWeight: "700", marginTop: 5 }, welcomeText: { color: "#dce0ff", fontSize: 12, marginTop: 3 }, mutedLight: { color: "#aeb9d3", fontSize: 11, marginTop: 3 }, sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 11, marginTop: 4 }, sectionTitle: { color: theme.ink, fontSize: 16, fontWeight: "700", marginBottom: 11 }, link: { color: theme.blue, fontSize: 12, fontWeight: "700" }, billCard: { backgroundColor: "#fff", borderRadius: 16, padding: 15, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.line }, billIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: "#eef0ff", justifyContent: "center", alignItems: "center", marginRight: 12 }, billCopy: { flex: 1 }, cardLabel: { color: theme.ink, fontSize: 12, fontWeight: "700" }, billAmount: { color: theme.ink, fontSize: 19, fontWeight: "700", marginTop: 3 }, muted: { color: theme.muted, fontSize: 11, marginTop: 3 }, pending: { backgroundColor: "#fff5e6", paddingHorizontal: 8, paddingVertical: 5, borderRadius: 7 }, pendingText: { color: "#c5862f", fontSize: 10, fontWeight: "700" }, quickGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginVertical: 22 }, quick: { width: "48%", backgroundColor: "#fff", borderRadius: 14, padding: 13, marginBottom: 10, borderWidth: 1, borderColor: theme.line }, quickIcon: { width: 34, height: 34, borderRadius: 11, justifyContent: "center", alignItems: "center", marginBottom: 9 }, quickLabel: { color: theme.ink, fontSize: 11, fontWeight: "700" }, noticeCard: { backgroundColor: "#fff", borderRadius: 16, padding: 15, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.line, marginBottom: 11 }, noticeMark: { width: 36, height: 36, borderRadius: 11, backgroundColor: "#eef0ff", justifyContent: "center", alignItems: "center", marginRight: 11 }, noticeCopy: { flex: 1 }, noticeTitle: { color: theme.ink, fontSize: 12, fontWeight: "700" }, tabs: { position: "absolute", bottom: 0, left: 0, right: 0, height: 75, paddingBottom: 12, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: theme.line, flexDirection: "row", justifyContent: "space-around", alignItems: "center" }, tab: { alignItems: "center", minWidth: 50 }, tabText: { color: "#9ca5b6", fontSize: 9, marginTop: 4 }, tabTextActive: { color: theme.blue, fontWeight: "700" }, totalCard: { backgroundColor: theme.navy, borderRadius: 18, padding: 20, marginBottom: 18 }, totalAmount: { color: "#fff", fontSize: 32, fontWeight: "700", marginVertical: 6 }, payButton: { marginTop: 18, padding: 12, borderRadius: 10, backgroundColor: "#dfe3ff", justifyContent: "center", alignItems: "center" }, payButtonText: { color: theme.navy, fontSize: 11, fontWeight: "700" }, billRow: { backgroundColor: "#fff", borderRadius: 14, padding: 14, marginBottom: 10, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.line }, billRowIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: "#eef0ff", justifyContent: "center", alignItems: "center", marginRight: 11 }, billStatus: { color: "#c5862f", fontSize: 11, fontWeight: "700" }, billPaid: { color: "#2cae8b" }, filterRow: { flexDirection: "row", gap: 20, marginBottom: 15 }, filterActive: { color: theme.blue, fontSize: 11, fontWeight: "700" }, filter: { color: theme.muted, fontSize: 11 }, noticeListCard: { backgroundColor: "#fff", borderRadius: 15, padding: 16, marginBottom: 11, borderWidth: 1, borderColor: theme.line }, noticeTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }, noticeTag: { color: theme.blue, fontSize: 10, fontWeight: "700" }, noticeBody: { color: "#667187", fontSize: 11, lineHeight: 17, marginTop: 12 }, requestToggle: { flexDirection: "row", backgroundColor: "#e9edf6", borderRadius: 11, padding: 4, marginBottom: 15 }, requestChoice: { flex: 1, alignItems: "center", padding: 11, borderRadius: 8 }, requestChoiceActive: { backgroundColor: "#fff" }, requestChoiceText: { color: theme.muted, fontSize: 12, fontWeight: "700" }, requestChoiceTextActive: { color: theme.blue }, formCard: { backgroundColor: "#fff", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: theme.line, marginBottom: 20 }, formMessage: { color: theme.blue, fontSize: 11, textAlign: "center", marginTop: 12 }, emptyText: { color: theme.muted, fontSize: 12, marginBottom: 20 }, profileCard: { alignItems: "center", backgroundColor: "#fff", borderRadius: 17, padding: 22, borderWidth: 1, borderColor: theme.line, marginBottom: 16 }, profileLarge: { width: 64, height: 64, borderRadius: 32, backgroundColor: theme.blue, justifyContent: "center", alignItems: "center" }, profileLargeText: { color: "#fff", fontSize: 20, fontWeight: "700" }, profileName: { color: theme.ink, fontSize: 17, fontWeight: "700", marginTop: 10 }, profileRow: { backgroundColor: "#fff", borderRadius: 14, padding: 13, marginBottom: 9, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: theme.line }, profileRowIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: "#eef0ff", justifyContent: "center", alignItems: "center", marginRight: 11 }, profileRowCopy: { flex: 1 }, profileRowTitle: { color: theme.ink, fontSize: 12, fontWeight: "700" }, logoutButton: { marginTop: 18, borderWidth: 1, borderColor: theme.rose, borderRadius: 10, padding: 12, alignItems: "center" }, logoutText: { color: theme.rose, fontSize: 12, fontWeight: "700" } });
