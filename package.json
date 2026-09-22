@@ -1,15 +1,16 @@
-{
+@{
   "name": "society-os",
   "version": "0.1.0",
   "private": true,
   "description": "Multi-society management platform",
-  "workspaces": ["backend", "web-admin"],
+  "workspaces": ["code/backend", "code/web-admin", "code/mobile-app"],
   "scripts": {
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
-    "dev:api": "npm --workspace backend run dev",
-    "dev:web": "npm --workspace web-admin run dev",
-    "build": "npm --workspace web-admin run build",
-    "start": "npm --workspace backend start"
+    "dev:api": "npm --workspace code/backend run dev",
+    "dev:web": "npm --workspace code/web-admin run dev",
+    "dev:mobile": "npm --workspace code/mobile-app run dev",
+    "build": "npm --workspace code/web-admin run build",
+    "start": "npm --workspace code/backend start"
   },
   "devDependencies": { "concurrently": "^9.1.2" }
 }
