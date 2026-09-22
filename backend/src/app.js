@@ -15,6 +15,7 @@ import paymentRoutes from "./routes/payments.js";
 import complaintRoutes from "./routes/complaints.js";
 import noticeRoutes from "./routes/notices.js";
 import visitorRoutes from "./routes/visitors.js";
+import { errorHandler } from "./errors/index.js";
 
 const app = express();
 app.use(helmet());
@@ -35,9 +36,6 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/visitors", visitorRoutes);
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
-app.use((error, req, res, next) => {
-  console.error(error);
-  res.status(500).json({ message: "Unexpected server error" });
-});
+app.use(errorHandler);
 
 export default app;
