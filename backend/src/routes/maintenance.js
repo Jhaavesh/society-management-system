@@ -1,42 +1,15 @@
 import { Router } from "express";
-import MaintenanceBill from "../models/maintenancebill.js";
-import Flat from "../models/flat.js";
+import { listBillsController, createBillController, getBillController, updateBillController } from "../controllers/index.js";
+import { validate, createBillSchema, updateBillSchema, billIdParamSchema, billQuerySchema } from "../validators/index.js";
 import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
-import { pickAllowedFields } from "../utils/fields.js";
 
 const router = Router();
 router.use(requireAuth);
 const managers = ["platform_admin", "society_admin", "accountant"];
 
-router.get("/", requireSocietyAccess, async (req, res, next) => {
-  try {
-    const filter = { societyId: req.societyId };
-    if (req.user.role === "resident") {
-      if (!req.user.flatId) return res.status(403).json({ message: "Resident is not assigned to a flat" });
-      filter.flatId = req.user.flatId;
-    }
-    else if (req.query.flatId) filter.flatId = req.query.flatId;
-    if (req.query.status) filter.status = req.query.status;
-    res.json(await MaintenanceBill.find(filter).populate("flatId", "flatNumber wing").sort({ dueDate: -1 }).lean());
-  } catch (error) { next(error); }
-});
-router.post("/", requireRole(...managers), requireSocietyAccess, async (req, res, next) => {
-  try {
-    const { flatId, month, year, amount, dueDate } = req.body;
-    if (!flatId || !month || !year || amount === undefined || !dueDate) return res.status(400).json({ message: "flatId, month, year, amount and dueDate are required" });
-    if (!await Flat.exists({ _id: flatId, societyId: req.societyId })) return res.status(400).json({ message: "Flat does not belong to this society" });
-    res.status(201).json(await MaintenanceBill.create({ flatId, month, year, amount, dueDate, societyId: req.societyId, createdBy: req.user.sub }));
-  } catch (error) { next(error); }
-});
-router.patch("/:id", requireRole(...managers), requireSocietyAccess, async (req, res, next) => {
-  try {
-    const { values, unknown } = pickAllowedFields(req.body, ["month", "year", "amount", "dueDate", "status"]);
-    if (unknown.length) return res.status(400).json({ message: `Unsupported bill fields: ${unknown.join(", ")}` });
-    if (!Object.keys(values).length) return res.status(400).json({ message: "At least one editable bill field is required" });
-    const bill = await MaintenanceBill.findOneAndUpdate({ _id: req.params.id, societyId: req.societyId }, values, { new: true, runValidators: true });
-    if (!bill) return res.status(404).json({ message: "Bill not found" });
-    res.json(bill);
-  } catch (error) { next(error); }
-});
+router.get("/", requireSocietyAccess, validate(billQuerySchema), listBillsController);
+router.post("/", requireRole(...managers), requireSocietyAccess, validate(createBillSchema), createBillController);
+router.get("/:id", requireSocietyAccess, validate(billIdParamSchema), getBillController);
+router.patch("/:id", requireRole(...managers), requireSocietyAccess, validate(billIdParamSchema), validate(updateBillSchema), updateBillController);
 
 export default router;

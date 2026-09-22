@@ -1,43 +1,15 @@
 import { Router } from "express";
-import Visitor from "../models/visitor.js";
-import Flat from "../models/flat.js";
+import { listVisitorsController, createVisitorController, getVisitorController, updateVisitorController } from "../controllers/index.js";
+import { validate, createVisitorSchema, updateVisitorSchema, visitorIdParamSchema, visitorQuerySchema } from "../validators/index.js";
 import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
-import { pickAllowedFields } from "../utils/fields.js";
 
 const router = Router();
 router.use(requireAuth);
 const managers = ["platform_admin", "society_admin", "security"];
 
-router.get("/", requireSocietyAccess, async (req, res, next) => {
-  try {
-    const filter = { societyId: req.societyId };
-    if (req.user.role === "resident") {
-      if (!req.user.flatId) return res.status(403).json({ message: "Resident is not assigned to a flat" });
-      filter.flatId = req.user.flatId;
-    }
-    else if (req.query.status) filter.status = req.query.status;
-    res.json(await Visitor.find(filter).populate("flatId", "flatNumber wing").sort({ visitDate: -1 }).lean());
-  } catch (error) { next(error); }
-});
-router.post("/", requireRole("resident", ...managers), requireSocietyAccess, async (req, res, next) => {
-  try {
-    const { visitorName, visitorMobile, purpose, visitDate } = req.body;
-    const flatId = req.user.role === "resident" ? req.user.flatId : req.body.flatId;
-    if (req.user.role === "resident" && !req.user.flatId) return res.status(403).json({ message: "Resident is not assigned to a flat" });
-    if (!flatId || !visitorName || !visitDate) return res.status(400).json({ message: "flatId, visitorName and visitDate are required" });
-    if (!await Flat.exists({ _id: flatId, societyId: req.societyId })) return res.status(400).json({ message: "Flat does not belong to this society" });
-    res.status(201).json(await Visitor.create({ flatId, visitorName, visitorMobile, purpose, visitDate, societyId: req.societyId }));
-  } catch (error) { next(error); }
-});
-router.patch("/:id", requireRole(...managers), requireSocietyAccess, async (req, res, next) => {
-  try {
-    const { values, unknown } = pickAllowedFields(req.body, ["visitorName", "visitorMobile", "purpose", "visitDate", "status"]);
-    if (unknown.length) return res.status(400).json({ message: `Unsupported visitor fields: ${unknown.join(", ")}` });
-    if (!Object.keys(values).length) return res.status(400).json({ message: "At least one editable visitor field is required" });
-    const visitor = await Visitor.findOneAndUpdate({ _id: req.params.id, societyId: req.societyId }, { ...values, approvedBy: req.user.sub }, { new: true, runValidators: true });
-    if (!visitor) return res.status(404).json({ message: "Visitor entry not found" });
-    res.json(visitor);
-  } catch (error) { next(error); }
-});
+router.get("/", requireSocietyAccess, validate(visitorQuerySchema), listVisitorsController);
+router.post("/", requireRole("resident", ...managers), requireSocietyAccess, validate(createVisitorSchema), createVisitorController);
+router.get("/:id", requireSocietyAccess, validate(visitorIdParamSchema), getVisitorController);
+router.patch("/:id", requireRole(...managers), requireSocietyAccess, validate(visitorIdParamSchema), validate(updateVisitorSchema), updateVisitorController);
 
 export default router;
