@@ -1,6 +1,7 @@
 ﻿import mongoose from "mongoose";
 import Payment from "../models/payment.js";
 import MaintenanceBill from "../models/maintenancebill.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError, ConflictError } from "../errors/index.js";
 
 export async function createPayment(data, context) {
@@ -65,6 +66,7 @@ export async function listPayments(data, context) {
   if (!context.societyId) {
     throw new ValidationError("societyId is required");
   }
+  const { page, limit, skip } = buildPagination(data);
   const filter = { societyId: context.societyId };
   if (context.user.role === "resident") {
     if (!context.user.flatId) {
@@ -74,10 +76,16 @@ export async function listPayments(data, context) {
   } else if (data.billId) {
     filter.billId = data.billId;
   }
-  return Payment.find(filter)
-    .populate("billId flatId", "month year flatNumber")
-    .sort({ paymentDate: -1 })
-    .lean();
+  const [items, total] = await Promise.all([
+    Payment.find(filter)
+      .populate("billId flatId", "month year flatNumber")
+      .sort({ paymentDate: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Payment.countDocuments(filter),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getPayment(data, context) {

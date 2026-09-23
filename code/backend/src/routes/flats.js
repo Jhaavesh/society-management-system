@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { listFlatsController, createFlatController, getFlatController, updateFlatController } from "../controllers/index.js";
+﻿import { Router } from "express";
+import { listFlatsController, createFlatController, getFlatController, updateFlatController, deleteFlatController } from "../controllers/index.js";
 import { validate, createFlatSchema, updateFlatSchema, flatIdParamSchema, flatQuerySchema } from "../validators/index.js";
 import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
 
@@ -11,5 +11,6 @@ router.get("/", requireSocietyAccess, validate(flatQuerySchema), listFlatsContro
 router.post("/", requireRole(...managers), requireSocietyAccess, validate(createFlatSchema), createFlatController);
 router.get("/:id", requireSocietyAccess, validate(flatIdParamSchema), getFlatController);
 router.patch("/:id", requireRole(...managers), requireSocietyAccess, validate(flatIdParamSchema), validate(updateFlatSchema), updateFlatController);
+router.delete("/:id", requireRole(...managers), requireSocietyAccess, validate(flatIdParamSchema), deleteFlatController);
 
 export default router;

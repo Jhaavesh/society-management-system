@@ -1,5 +1,6 @@
 ﻿import Society from "../models/society.js";
 import User from "../models/user.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { AuthorizationError, NotFoundError, ValidationError } from "../errors/index.js";
 
 export async function createSociety(data, context) {
@@ -24,8 +25,13 @@ export async function createSociety(data, context) {
 }
 
 export async function listSocieties(data, context) {
+  const { page, limit, skip } = buildPagination(data);
   const filter = context.user.role === "platform_admin" ? {} : { _id: { $in: context.user.societyIds } };
-  return Society.find(filter).sort({ createdAt: -1 }).lean();
+  const [items, total] = await Promise.all([
+    Society.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    Society.countDocuments(filter),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getSociety(data, context) {

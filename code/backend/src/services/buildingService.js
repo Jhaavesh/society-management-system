@@ -1,4 +1,5 @@
 ﻿import Building from "../models/building.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
 
 export async function createBuilding(data, context) {
@@ -14,7 +15,12 @@ export async function listBuildings(data, context) {
   if (!societyId) {
     throw new ValidationError("societyId is required");
   }
-  return Building.find({ societyId, active: true }).sort({ name: 1 }).lean();
+  const { page, limit, skip } = buildPagination(data);
+  const [items, total] = await Promise.all([
+    Building.find({ societyId, active: true }).sort({ name: 1 }).skip(skip).limit(limit).lean(),
+    Building.countDocuments({ societyId, active: true }),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getBuilding(data, context) {

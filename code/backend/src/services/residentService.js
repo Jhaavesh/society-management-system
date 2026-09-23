@@ -1,6 +1,7 @@
 ﻿import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 import Flat from "../models/flat.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError, ConflictError } from "../errors/index.js";
 
 export async function createResident(data, context) {
@@ -37,11 +38,18 @@ export async function listResidents(data, context) {
   if (!context.societyId) {
     throw new ValidationError("societyId is required");
   }
-  return User.find({ societyIds: context.societyId, role: "resident", active: true })
-    .select("name email phone flatId createdAt")
-    .populate("flatId", "flatNumber wing")
-    .sort({ name: 1 })
-    .lean();
+  const { page, limit, skip } = buildPagination(data);
+  const [items, total] = await Promise.all([
+    User.find({ societyIds: context.societyId, role: "resident", active: true })
+      .select("name email phone flatId createdAt")
+      .populate("flatId", "flatNumber wing")
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    User.countDocuments({ societyIds: context.societyId, role: "resident", active: true }),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getResident(data, context) {

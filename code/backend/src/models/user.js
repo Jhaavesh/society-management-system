@@ -1,16 +1,22 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const roles = ["platform_admin", "society_admin", "resident", "security", "accountant"];
+const roles = ['platform_admin', 'society_admin', 'resident', 'security', 'accountant'];
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true, select: false },
-  role: { type: String, enum: roles, default: "resident" },
+  role: { type: String, enum: roles, default: 'resident' },
   phone: { type: String, trim: true },
-  societyIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Society" }],
-  flatId: { type: mongoose.Schema.Types.ObjectId, ref: "Flat" },
+  societyIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Society' }],
+  flatId: { type: mongoose.Schema.Types.ObjectId, ref: 'Flat' },
   active: { type: Boolean, default: true }
 }, { timestamps: true });
 
+// Indexes for query performance at scale
+userSchema.index({ societyIds: 1, role: 1 });
+userSchema.index({ email: 1, active: 1 });
+userSchema.index({ flatId: 1 });
+userSchema.index({ societyIds: 1, active: 1 });
+
 export { roles };
-export default mongoose.model("User", userSchema);
+export default mongoose.model('User', userSchema);

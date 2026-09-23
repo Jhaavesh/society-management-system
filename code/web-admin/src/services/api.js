@@ -1,8 +1,13 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+﻿const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const API_PREFIX = "/api/v1";
+
+function getToken() {
+  return localStorage.getItem("societyOS.token");
+}
 
 async function request(path, options = {}) {
-  const token = localStorage.getItem("societyOS.token");
-  const response = await fetch(`${API_URL}${path}`, {
+  const token = getToken();
+  const response = await fetch(`${API_URL}${API_PREFIX}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

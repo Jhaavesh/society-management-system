@@ -1,6 +1,7 @@
 ﻿import Complaint from "../models/complaint.js";
 import Flat from "../models/flat.js";
 import { pickAllowedFields } from "../utils/fields.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
 
 export async function createComplaint(data, context) {
@@ -29,15 +30,22 @@ export async function listComplaints(data, context) {
   if (!context.societyId) {
     throw new ValidationError("societyId is required");
   }
+  const { page, limit, skip } = buildPagination(data);
   const filter = { societyId: context.societyId };
   if (context.user.role === "resident") {
     filter.userId = context.user.sub;
   }
   if (data.status) filter.status = data.status;
-  return Complaint.find(filter)
-    .populate("flatId", "flatNumber wing")
-    .sort({ createdAt: -1 })
-    .lean();
+  const [items, total] = await Promise.all([
+    Complaint.find(filter)
+      .populate("flatId", "flatNumber wing")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Complaint.countDocuments(filter),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getComplaint(data, context) {

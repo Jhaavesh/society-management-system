@@ -1,6 +1,7 @@
-import MaintenanceBill from "../models/maintenancebill.js";
+﻿import MaintenanceBill from "../models/maintenancebill.js";
 import Flat from "../models/flat.js";
 import { pickAllowedFields } from "../utils/fields.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError, AuthorizationError } from "../errors/index.js";
 
 export async function createBill(data, context) {
@@ -26,6 +27,7 @@ export async function listBills(data, context) {
   if (!context.societyId) {
     throw new ValidationError("societyId is required");
   }
+  const { page, limit, skip } = buildPagination(data);
   const filter = { societyId: context.societyId };
   if (context.user.role === "resident") {
     if (!context.user.flatId) {
@@ -36,10 +38,16 @@ export async function listBills(data, context) {
     filter.flatId = data.flatId;
   }
   if (data.status) filter.status = data.status;
-  return MaintenanceBill.find(filter)
-    .populate("flatId", "flatNumber wing")
-    .sort({ dueDate: -1 })
-    .lean();
+  const [items, total] = await Promise.all([
+    MaintenanceBill.find(filter)
+      .populate("flatId", "flatNumber wing")
+      .sort({ dueDate: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    MaintenanceBill.countDocuments(filter),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getBill(data, context) {

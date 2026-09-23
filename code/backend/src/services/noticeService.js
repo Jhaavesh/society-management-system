@@ -1,4 +1,5 @@
 ﻿import Notice from "../models/notice.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
 
 export async function createNotice(data, context) {
@@ -19,10 +20,17 @@ export async function listNotices(data, context) {
   if (!context.societyId) {
     throw new ValidationError("societyId is required");
   }
-  return Notice.find({ societyId: context.societyId })
-    .populate("publishedBy", "name")
-    .sort({ createdAt: -1 })
-    .lean();
+  const { page, limit, skip } = buildPagination(data);
+  const [items, total] = await Promise.all([
+    Notice.find({ societyId: context.societyId })
+      .populate("publishedBy", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Notice.countDocuments({ societyId: context.societyId }),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getNotice(data, context) {

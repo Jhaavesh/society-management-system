@@ -1,5 +1,6 @@
 ﻿import Flat from "../models/flat.js";
 import Building from "../models/building.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError, ConflictError } from "../errors/index.js";
 
 export async function createFlat(data, context) {
@@ -26,6 +27,7 @@ export async function listFlats(data, context) {
   if (!societyId) {
     throw new ValidationError("societyId is required");
   }
+  const { page, limit, skip } = buildPagination(data);
   const filter = { societyId };
   if (buildingId) filter.buildingId = buildingId;
   if (context.user.role === "resident") {
@@ -34,7 +36,11 @@ export async function listFlats(data, context) {
     }
     filter._id = context.user.flatId;
   }
-  return Flat.find(filter).populate("buildingId", "name").sort({ flatNumber: 1 }).lean();
+  const [items, total] = await Promise.all([
+    Flat.find(filter).populate("buildingId", "name").sort({ flatNumber: 1 }).skip(skip).limit(limit).lean(),
+    Flat.countDocuments(filter),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getFlat(data, context) {

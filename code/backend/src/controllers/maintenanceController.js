@@ -1,7 +1,8 @@
-import { validate, createBillSchema, updateBillSchema, billIdParamSchema, billQuerySchema } from "../validators/index.js";
-import { createBill, listBills, getBill, updateBill } from "../services/maintenanceService.js";
+﻿import { validate, createBillSchema, updateBillSchema, billIdParamSchema, billQuerySchema } from "../validators/index.js";
+import { createBill, listBills, getBill, updateBill, deleteBill } from "../services/maintenanceService.js";
 
 const ctx = (req) => ({ user: req.user, societyId: req.societyId });
+const managers = ["platform_admin", "society_admin", "accountant"];
 
 export const listBillsController = [
   validate(billQuerySchema),
@@ -46,6 +47,18 @@ export const updateBillController = [
     try {
       const data = await updateBill({ billId: req.params.id, ...req.body }, ctx(req));
       res.json({ success: true, ...data.toObject ? data.toObject() : data, message: "Maintenance bill updated successfully" });
+    } catch (error) {
+      next(error);
+    }
+  },
+];
+
+export const deleteBillController = [
+  validate(billIdParamSchema),
+  async (req, res, next) => {
+    try {
+      const data = await deleteBill({ billId: req.params.id }, ctx(req));
+      res.json({ success: true, ...data, message: "Maintenance bill deleted successfully" });
     } catch (error) {
       next(error);
     }

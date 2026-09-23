@@ -1,7 +1,12 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { ValidationError } from "../errors/index.js";
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
+
+const paginationQuery = z.object({
+  page: z.coerce.number().int().min(1).default(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
+});
 
 export const loginSchema = z.object({
   body: z.object({
@@ -89,21 +94,21 @@ export const flatIdParamSchema = z.object({
 export const flatQuerySchema = z.object({
   query: z.object({
     buildingId: objectId.optional(),
-  }),
+  }).merge(paginationQuery),
 });
 
 export const createResidentSchema = z.object({
   body: z.object({
     name: z.string().min(1, "Name is required").trim(),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number"),
     phone: z.string().trim().optional(),
     flatId: objectId,
   }),
 });
 
 export const residentQuerySchema = z.object({
-  query: z.object({}),
+  query: z.object({}).merge(paginationQuery),
 });
 
 export const createBillSchema = z.object({
@@ -136,7 +141,7 @@ export const billQuerySchema = z.object({
   query: z.object({
     flatId: objectId.optional(),
     status: z.enum(["pending", "paid", "overdue"]).optional(),
-  }),
+  }).merge(paginationQuery),
 });
 
 export const createPaymentSchema = z.object({
@@ -152,7 +157,7 @@ export const createPaymentSchema = z.object({
 export const paymentQuerySchema = z.object({
   query: z.object({
     billId: objectId.optional(),
-  }),
+  }).merge(paginationQuery),
 });
 
 export const createComplaintSchema = z.object({
@@ -183,7 +188,7 @@ export const complaintIdParamSchema = z.object({
 export const complaintQuerySchema = z.object({
   query: z.object({
     status: z.enum(["open", "assigned", "in_progress", "resolved", "closed"]).optional(),
-  }),
+  }).merge(paginationQuery),
 });
 
 export const createNoticeSchema = z.object({
@@ -195,7 +200,7 @@ export const createNoticeSchema = z.object({
 });
 
 export const noticeQuerySchema = z.object({
-  query: z.object({}),
+  query: z.object({}).merge(paginationQuery),
 });
 
 export const createVisitorSchema = z.object({
@@ -227,7 +232,7 @@ export const visitorIdParamSchema = z.object({
 export const visitorQuerySchema = z.object({
   query: z.object({
     status: z.enum(["pending", "approved", "rejected", "checked_in", "checked_out"]).optional(),
-  }),
+  }).merge(paginationQuery),
 });
 
 export const validate = (schema) => (req, res, next) => {

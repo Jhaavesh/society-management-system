@@ -1,6 +1,7 @@
 ﻿import Visitor from "../models/visitor.js";
 import Flat from "../models/flat.js";
 import { pickAllowedFields } from "../utils/fields.js";
+import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
 
 export async function createVisitor(data, context) {
@@ -29,6 +30,7 @@ export async function listVisitors(data, context) {
   if (!context.societyId) {
     throw new ValidationError("societyId is required");
   }
+  const { page, limit, skip } = buildPagination(data);
   const filter = { societyId: context.societyId };
   if (context.user.role === "resident") {
     if (!context.user.flatId) {
@@ -38,10 +40,16 @@ export async function listVisitors(data, context) {
   } else if (data.status) {
     filter.status = data.status;
   }
-  return Visitor.find(filter)
-    .populate("flatId", "flatNumber wing")
-    .sort({ visitDate: -1 })
-    .lean();
+  const [items, total] = await Promise.all([
+    Visitor.find(filter)
+      .populate("flatId", "flatNumber wing")
+      .sort({ visitDate: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Visitor.countDocuments(filter),
+  ]);
+  return paginatedResponse(items, total, page, limit);
 }
 
 export async function getVisitor(data, context) {

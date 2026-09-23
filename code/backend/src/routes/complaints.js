@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { listComplaintsController, createComplaintController, getComplaintController, updateComplaintController } from "../controllers/index.js";
+﻿import { Router } from "express";
+import { listComplaintsController, createComplaintController, getComplaintController, updateComplaintController, deleteComplaintController } from "../controllers/index.js";
 import { validate, createComplaintSchema, updateComplaintSchema, complaintIdParamSchema, complaintQuerySchema } from "../validators/index.js";
 import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
 
@@ -11,5 +11,6 @@ router.get("/", requireSocietyAccess, validate(complaintQuerySchema), listCompla
 router.post("/", requireRole("resident", ...managers), requireSocietyAccess, validate(createComplaintSchema), createComplaintController);
 router.get("/:id", requireSocietyAccess, validate(complaintIdParamSchema), getComplaintController);
 router.patch("/:id", requireRole(...managers), requireSocietyAccess, validate(complaintIdParamSchema), validate(updateComplaintSchema), updateComplaintController);
+router.delete("/:id", requireRole(...managers), requireSocietyAccess, validate(complaintIdParamSchema), deleteComplaintController);
 
 export default router;
