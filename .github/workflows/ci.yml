@@ -15,9 +15,9 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: web-admin/package-lock.json
-      - run: npm ci --prefix "$GITHUB_WORKSPACE/web-admin"
-      - run: npm run build --prefix "$GITHUB_WORKSPACE/web-admin"
+          cache-dependency-path: frontend/web-admin/package-lock.json
+      - run: npm ci --prefix "$GITHUB_WORKSPACE/frontend/web-admin"
+      - run: npm run build --prefix "$GITHUB_WORKSPACE/frontend/web-admin"
 
   backend-syntax:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
       - run: node --check src/utils/fields.js
         working-directory: backend
       - run: node --check api.js
-        working-directory: mobile-app
+        working-directory: frontend/mobile-app
       - run: npm test --prefix "$GITHUB_WORKSPACE/backend"
 
   mobile-build:
@@ -59,6 +59,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: mobile-app/package-lock.json
-      - run: npm ci --prefix "$GITHUB_WORKSPACE/mobile-app"
-      - run: npm --prefix "$GITHUB_WORKSPACE/mobile-app" exec -- expo config --type public
+          cache-dependency-path: frontend/mobile-app/package-lock.json
+      - run: npm ci --prefix "$GITHUB_WORKSPACE/frontend/mobile-app"
+      - run: npm --prefix "$GITHUB_WORKSPACE/frontend/mobile-app" exec -- expo config --type public
