@@ -1,4 +1,4 @@
-﻿import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Icon } from '../ui/Icon.jsx';
 
 const navGroups = [
@@ -36,14 +36,14 @@ export function SidebarNav() {
             {group.label}
           </div>
           {group.items.map((item) => (
-            <a
+            <Link
               key={item.id}
-              href={item.path}
+              to={item.path}
               className={'nav-item ' + (currentPath === item.path ? 'active' : '')}
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
-            </a>
+            </Link>
           ))}
         </div>
       ))}

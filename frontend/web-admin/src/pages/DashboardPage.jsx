@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSocieties } from '../hooks/useSocieties.js';
 import { useDashboard } from '../hooks/useDashboard.js';
@@ -8,11 +9,12 @@ import { OverviewPage } from './OverviewPage.jsx';
 import { ModulePage } from './ModulePage.jsx';
 
 export default function DashboardPage() {
+  const { module } = useParams();
   const { isAuthenticated } = useAuth();
   const { selectedSocietyId, societies } = useSocieties();
   const { data: dashboardData, loading, error, refetch } = useDashboard(selectedSocietyId);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const activeTab = (module && module !== 'dashboard') ? module : 'overview';
 
   if (!isAuthenticated) return null;
 

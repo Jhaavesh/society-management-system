@@ -1,4 +1,5 @@
-﻿import { useAuth } from './hooks/useAuth.js';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth.js';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 
@@ -20,10 +21,21 @@ function AppRoutes() {
   }
 
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
   }
 
-  return <DashboardPage />;
+  return (
+    <Routes>
+      <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/:module" element={<DashboardPage />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
 }
 
 export default function App() {
