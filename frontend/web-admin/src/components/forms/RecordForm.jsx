@@ -3,7 +3,15 @@ import { Input } from '../ui/Input.jsx';
 import { Button } from '../ui/Button.jsx';
 
 export function RecordForm({ fields, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(() => {
+    const initial = {};
+    fields.forEach(f => {
+      if (f.defaultValue !== undefined) {
+        initial[f.name] = f.defaultValue;
+      }
+    });
+    return initial;
+  });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,8 +37,16 @@ export function RecordForm({ fields, onSubmit, onCancel }) {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
+    
+    const parsedData = { ...formData };
+    fields.forEach((field) => {
+      if (field.type === 'number' && parsedData[field.name] !== undefined && parsedData[field.name] !== '') {
+        parsedData[field.name] = Number(parsedData[field.name]);
+      }
+    });
+
     try {
-      await onSubmit(formData);
+      await onSubmit(parsedData);
     } finally {
       setSubmitting(false);
     }

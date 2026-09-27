@@ -1,22 +1,28 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api.js';
 
 const moduleLoaders = {
-  Societies: 'societies',
-  Residents: 'residents',
-  'Billing & payments': 'bills',
-  Complaints: 'complaints',
-  Visitors: 'visitors',
-  Reports: 'payments'
+  societies: 'societies',
+  buildings: 'buildings',
+  flats: 'flats',
+  residents: 'residents',
+  billing: 'bills',
+  complaints: 'complaints',
+  notices: 'notices',
+  visitors: 'visitors',
+  reports: 'payments'
 };
 
 const moduleCreators = {
-  Societies: 'createSociety',
-  Residents: 'createResident',
-  'Billing & payments': 'createBill',
-  Complaints: 'createComplaint',
-  Visitors: 'createVisitor',
-  Reports: 'createPayment'
+  societies: 'createSociety',
+  buildings: 'createBuilding',
+  flats: 'createFlat',
+  residents: 'createResident',
+  billing: 'createBill',
+  complaints: 'createComplaint',
+  notices: 'createNotice',
+  visitors: 'createVisitor',
+  reports: 'createPayment'
 };
 
 export function useModuleData(module, societyId) {
@@ -25,7 +31,7 @@ export function useModuleData(module, societyId) {
   const [error, setError] = useState(null);
 
   const fetchRecords = useCallback(async () => {
-    if (!societyId || societyId === 'all') {
+    if (module !== 'societies' && (!societyId || societyId === 'all')) {
       setRecords([]);
       return;
     }
@@ -37,7 +43,7 @@ export function useModuleData(module, societyId) {
     setLoading(true);
     setError(null);
     try {
-      const data = await api[loader](societyId);
+      const data = module === 'societies' ? await api[loader]() : await api[loader](societyId);
       setRecords(data);
     } catch (err) {
       setError(err.message);
@@ -53,8 +59,12 @@ export function useModuleData(module, societyId) {
   const createRecord = useCallback(async (payload) => {
     const creator = moduleCreators[module];
     if (!creator) throw new Error('No creator for module');
-    if (!societyId || societyId === 'all') throw new Error('Select a society first');
-    const newRecord = await api[creator](societyId, payload);
+    if (module !== 'societies' && (!societyId || societyId === 'all')) throw new Error('Select a society first');
+    
+    const newRecord = module === 'societies' 
+      ? await api[creator](payload) 
+      : await api[creator](societyId, payload);
+      
     setRecords((prev) => [...prev, newRecord]);
     return newRecord;
   }, [module, societyId]);
