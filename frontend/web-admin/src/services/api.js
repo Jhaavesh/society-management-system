@@ -24,7 +24,7 @@ async function request(path, options = {}) {
     }
     throw new Error(body.message || "Request failed");
   }
-  return body;
+  return body.data !== undefined ? body.data : body;
 }
 
 export const api = {
