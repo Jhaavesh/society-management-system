@@ -1,4 +1,4 @@
-﻿import { useSocieties } from '../../hooks/useSocieties.js';
+import { useSocieties } from '../../hooks/useSocieties.js';
 import { Icon } from '../ui/Icon.jsx';
 import { Avatar } from '../ui/Avatar.jsx';
 
@@ -18,6 +18,7 @@ export function TopBar({ onMenuClick, breadcrumb, children }) {
         {breadcrumb && breadcrumb.map((item, idx) => (
           <span key={idx} className={item.href ? 'crumb-link' : 'crumb-current'}>
             {item.href ? <a href={item.href}>{item.label}</a> : item.label}
+            {idx < breadcrumb.length - 1 && <span style={{ margin: '0 8px', color: 'var(--line)' }}>/</span>}
           </span>
         ))}
       </nav>

@@ -20,7 +20,9 @@ async function request(path, options = {}) {
     if (response.status === 401) {
       localStorage.removeItem("societyOS.token");
       localStorage.removeItem("societyOS.session");
-      window.location.href = "/login";
+      if (window.location.pathname !== '/login') {
+        window.location.href = "/login";
+      }
     }
     throw new Error(body.message || "Request failed");
   }

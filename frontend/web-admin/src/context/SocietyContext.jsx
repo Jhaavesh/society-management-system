@@ -1,5 +1,6 @@
-﻿import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api.js';
+import { useAuth } from '../hooks/useAuth.js';
 
 const SocietyContext = createContext(null);
 
@@ -9,7 +10,10 @@ export function SocietyProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const { isAuthenticated } = useAuth();
+
   const fetchSocieties = useCallback(async () => {
+    if (!isAuthenticated) return;
     setLoading(true);
     setError(null);
     try {
@@ -20,7 +24,7 @@ export function SocietyProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchSocieties();

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useSocieties } from '../../hooks/useSocieties.js';
 import { Icon } from '../ui/Icon.jsx';
@@ -45,20 +45,13 @@ export function Sidebar() {
 
       <SidebarNav />
 
-      <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #ffffff17' }}>
-        <div className='nav-item' style={{ justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Avatar name={session?.user?.name || 'User'} size={32} />
-            <div style={{ color: '#fff', lineHeight: 1.2 }}>
-              <div style={{ fontWeight: 600, fontSize: '13px' }}>
-                {session?.user?.name || 'User'}
-              </div>
-              <div style={{ fontSize: '11px', color: '#7887a7' }}>
-                {session?.user?.role || 'Admin'}
-              </div>
-            </div>
-          </div>
+      <div className='profile' style={{ marginTop: 'auto', paddingTop: '20px' }}>
+        <Avatar name={session?.user?.name || 'User'} size={32} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <strong>{session?.user?.name || 'User'}</strong>
+          <span>{session?.user?.role || 'Admin'}</span>
         </div>
+      </div>
         <button
           className='nav-item logout-button'
           onClick={logout}
@@ -67,7 +60,6 @@ export function Sidebar() {
           <Icon name='logout' />
           <span>Sign out</span>
         </button>
-      </div>
     </aside>
   );
 }
