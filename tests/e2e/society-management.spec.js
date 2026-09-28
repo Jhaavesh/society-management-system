@@ -69,8 +69,7 @@ test.describe('Society Management E2E', () => {
 
     // 4. Logout Test
     await test.step('Logout', async () => {
-      await page.click('.profile-btn');
-      await page.click('button:has-text("Sign out")');
+      await page.click('.logout-button');
       await page.waitForURL('/login');
       expect(page.url()).toContain('/login');
     });
