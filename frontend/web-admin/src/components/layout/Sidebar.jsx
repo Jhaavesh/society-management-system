@@ -1,14 +1,12 @@
-import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useSocieties } from '../../hooks/useSocieties.js';
 import { Icon } from '../ui/Icon.jsx';
 import { Avatar } from '../ui/Avatar.jsx';
 import { SidebarNav } from './SidebarNav.jsx';
 
-export function Sidebar() {
+export function Sidebar({ isOpen }) {
   const { session, logout } = useAuth();
   const { societies, selectedSocietyId, selectSociety, loading } = useSocieties();
-  const [isOpen, setIsOpen] = useState(false);
 
   const userInitials = session?.user?.name
     ?.split(' ')

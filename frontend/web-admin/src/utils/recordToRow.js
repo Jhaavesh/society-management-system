@@ -10,11 +10,3 @@ export function recordToRow(record, headers) {
   }
   return row;
 }
-
-export function formatCellValue(value, key) {
-  if (value === null || value === undefined) return '-';
-  if (typeof value === 'object' && value.value !== undefined) {
-    return value.value;
-  }
-  return value;
-}

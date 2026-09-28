@@ -26,7 +26,7 @@ export default function DashboardPage() {
 
   return (
     <div className='app-shell'>
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} />
       <div className='main'>
         <TopBar
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}

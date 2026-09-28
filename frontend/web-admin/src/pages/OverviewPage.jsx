@@ -1,5 +1,4 @@
 import { useSocieties } from '../hooks/useSocieties.js';
-import { useDashboard } from '../hooks/useDashboard.js';
 import { formatCurrency, formatNumber, formatPercentage } from '../utils/formatters.js';
 import { formatDate } from '../utils/date.js';
 import { Card } from '../components/ui/Card.jsx';

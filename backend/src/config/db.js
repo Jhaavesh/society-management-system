@@ -5,14 +5,16 @@ const isTest = process.env.NODE_ENV === 'test';
 export async function connectDatabase() {
   const uri = process.env.MONGODB_URI;
 
-  // Use memory server only for testing or when no proper Atlas URI is provided
-  if (isTest || (!uri || uri.includes('localhost') || uri.includes('127.0.0.1'))) {
+  // Use memory server only for testing
+  if (isTest) {
     const { MongoMemoryServer } = await import('mongodb-memory-server');
     const mongo = await MongoMemoryServer.create();
     await mongoose.connect(mongo.getUri(), getConnectionOptions());
     console.log('MongoDB connected (memory server)');
     return;
   }
+
+  if (!uri) throw new Error("MONGODB_URI is required");
 
   // Production/Development Atlas connection with pooling
   await mongoose.connect(uri, getConnectionOptions());

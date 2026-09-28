@@ -94,6 +94,7 @@ export function RecordForm({ fields, onSubmit, onCancel }) {
     return (
       <Input
         key={field.name}
+        name={field.name}
         label={field.label}
         type={field.type}
         value={value}

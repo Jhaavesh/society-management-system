@@ -1,4 +1,4 @@
-﻿// App.js - New entry point with providers
+// App.js - New entry point with providers
 import { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, View, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -39,7 +39,7 @@ function AppContent() {
       .catch((error) => setLoadError(error.message));
   }, [session]);
 
-  const handleLogin = async (newSession: any) => {
+  const handleLogin = async (newSession) => {
     await login(newSession);
   };
 
@@ -48,7 +48,7 @@ function AppContent() {
     setData(null);
   };
 
-  const handleSubmitComplaint = async (title: string, detail: string) => {
+  const handleSubmitComplaint = async (title, detail) => {
     const societyId = session?.user?.societyIds?.[0];
     const flatId = session?.user?.flatId;
     if (!session?.token || !societyId || !flatId) throw new Error('Missing session data');
@@ -58,17 +58,13 @@ function AppContent() {
     setData(refreshed);
   };
 
-  const handleSubmitVisitor = async (title: string, detail: string) => {
+  const handleSubmitVisitor = async (title, detail) => {
     const societyId = session?.user?.societyIds?.[0];
     const flatId = session?.user?.flatId;
     if (!session?.token || !societyId || !flatId) throw new Error('Missing session data');
     await createVisitor(session.token, societyId, flatId, title, detail, new Date().toISOString());
     const refreshed = await getResidentData(session.token, societyId);
     setData(refreshed);
-  };
-
-  const onNavigate = (tab: string) => {
-    // Navigation is handled by tab bar, but can be used for deep linking
   };
 
   if (hydrating) {
@@ -97,7 +93,6 @@ function AppContent() {
       <TabNavigator
         session={session}
         data={data}
-        onNavigate={onNavigate}
         onLogout={handleLogout}
       />
     </SafeAreaView>

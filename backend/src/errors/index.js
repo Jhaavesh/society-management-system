@@ -39,12 +39,6 @@ export class ConflictError extends AppError {
   }
 }
 
-export class BadRequestError extends AppError {
-  constructor(message = 'Bad request') {
-    super(message, 400);
-  }
-}
-
 export const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';

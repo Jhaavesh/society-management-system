@@ -25,12 +25,12 @@ const moduleConfigs = {
       { key: 'city', label: 'City' },
     ],
     fields: [
-      { name: 'name', label: 'Society Name', type: 'text', required: true, defaultValue: 'New Society' },
-      { name: 'address', label: 'Address', type: 'text', defaultValue: '123 Main St' },
-      { name: 'city', label: 'City', type: 'text', defaultValue: 'Mumbai' },
-      { name: 'state', label: 'State', type: 'text', defaultValue: 'MH' },
-      { name: 'pincode', label: 'Pincode', type: 'text', defaultValue: '400001' },
-      { name: 'logoUrl', label: 'Logo URL', type: 'text', defaultValue: '' },
+      { name: 'name', label: 'Society Name', type: 'text', required: true },
+      { name: 'address', label: 'Address', type: 'text' },
+      { name: 'city', label: 'City', type: 'text' },
+      { name: 'state', label: 'State', type: 'text' },
+      { name: 'pincode', label: 'Pincode', type: 'text' },
+      { name: 'logoUrl', label: 'Logo URL', type: 'text' },
     ],
   },
   buildings: {
@@ -44,8 +44,8 @@ const moduleConfigs = {
       { key: 'floors', label: 'Total Floors', align: 'center' },
     ],
     fields: [
-      { name: 'name', label: 'Building Name', type: 'text', required: true, defaultValue: 'Block B' },
-      { name: 'floors', label: 'Total Floors', type: 'number', required: true, defaultValue: '5' },
+      { name: 'name', label: 'Building Name', type: 'text', required: true },
+      { name: 'floors', label: 'Total Floors', type: 'number', required: true },
     ],
   },
   flats: {
@@ -61,11 +61,11 @@ const moduleConfigs = {
       { key: 'status', label: 'Status' },
     ],
     fields: [
-      { name: 'flatNumber', label: 'Flat Number', type: 'text', required: true, defaultValue: '102' },
-      { name: 'buildingId', label: 'Building ID (24-char)', type: 'text', required: true, defaultValue: '60b8d295f1d2c72b1c345679' },
-      { name: 'floor', label: 'Floor', type: 'number', defaultValue: '1' },
-      { name: 'wing', label: 'Wing', type: 'text', defaultValue: 'A' },
-      { name: 'status', label: 'Status', type: 'select', defaultValue: 'vacant', options: ['vacant', 'occupied'] },
+      { name: 'flatNumber', label: 'Flat Number', type: 'text', required: true },
+      { name: 'buildingId', label: 'Building ID', type: 'text', required: true },
+      { name: 'floor', label: 'Floor', type: 'number' },
+      { name: 'wing', label: 'Wing', type: 'text' },
+      { name: 'status', label: 'Status', type: 'select', options: ['vacant', 'occupied'] },
     ],
   },
   residents: {
@@ -81,11 +81,11 @@ const moduleConfigs = {
       { key: 'phone', label: 'Phone' },
     ],
     fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true, defaultValue: 'Jane Doe' },
-      { name: 'email', label: 'Email', type: 'email', required: true, defaultValue: 'jane@example.com' },
-      { name: 'password', label: 'Password', type: 'password', required: true, defaultValue: 'Password123' },
-      { name: 'phone', label: 'Phone', type: 'text', defaultValue: '9876543210' },
-      { name: 'flatId', label: 'Flat ID (24-char)', type: 'text', required: true, defaultValue: '60b8d295f1d2c72b1c34567a' },
+      { name: 'name', label: 'Name', type: 'text', required: true },
+      { name: 'email', label: 'Email', type: 'email', required: true },
+      { name: 'password', label: 'Password', type: 'password', required: true },
+      { name: 'phone', label: 'Phone', type: 'text' },
+      { name: 'flatId', label: 'Flat ID', type: 'text', required: true },
     ],
   },
   billing: {
@@ -103,11 +103,11 @@ const moduleConfigs = {
       { key: 'dueDate', label: 'Due Date' },
     ],
     fields: [
-      { name: 'flatId', label: 'Flat ID (24-char)', type: 'text', required: true, defaultValue: '60b8d295f1d2c72b1c34567a' },
-      { name: 'month', label: 'Month', type: 'number', required: true, defaultValue: '2' },
-      { name: 'year', label: 'Year', type: 'number', required: true, defaultValue: '2024' },
-      { name: 'amount', label: 'Amount', type: 'number', required: true, defaultValue: '3000' },
-      { name: 'dueDate', label: 'Due Date', type: 'date', required: true, defaultValue: '2024-12-31' },
+      { name: 'flatId', label: 'Flat ID', type: 'text', required: true },
+      { name: 'month', label: 'Month', type: 'number', required: true },
+      { name: 'year', label: 'Year', type: 'number', required: true },
+      { name: 'amount', label: 'Amount', type: 'number', required: true },
+      { name: 'dueDate', label: 'Due Date', type: 'date', required: true },
     ],
   },
   complaints: {
@@ -123,10 +123,10 @@ const moduleConfigs = {
       { key: 'status', label: 'Status', align: 'center' },
     ],
     fields: [
-      { name: 'flatId', label: 'Flat ID (24-char, optional)', type: 'text', defaultValue: '60b8d295f1d2c72b1c34567a' },
-      { name: 'category', label: 'Category', type: 'text', required: true, defaultValue: 'Plumbing' },
-      { name: 'description', label: 'Description', type: 'textarea', required: true, defaultValue: 'Leakage in bathroom' },
-      { name: 'priority', label: 'Priority', type: 'select', defaultValue: 'high', options: ['low', 'normal', 'high'] },
+      { name: 'flatId', label: 'Flat ID (Optional)', type: 'text' },
+      { name: 'category', label: 'Category', type: 'text', required: true },
+      { name: 'description', label: 'Description', type: 'textarea', required: true },
+      { name: 'priority', label: 'Priority', type: 'select', options: ['low', 'normal', 'high'] },
     ],
   },
   visitors: {
@@ -142,11 +142,11 @@ const moduleConfigs = {
       { key: 'status', label: 'Status', align: 'center' },
     ],
     fields: [
-      { name: 'flatId', label: 'Flat ID (24-char, optional)', type: 'text', defaultValue: '60b8d295f1d2c72b1c34567a' },
-      { name: 'visitorName', label: 'Visitor Name', type: 'text', required: true, defaultValue: 'Alice' },
-      { name: 'visitorMobile', label: 'Visitor Mobile', type: 'text', defaultValue: '1234567890' },
-      { name: 'purpose', label: 'Purpose', type: 'text', defaultValue: 'Meeting' },
-      { name: 'visitDate', label: 'Visit Date', type: 'datetime-local', required: true, defaultValue: '2024-12-31T10:00' },
+      { name: 'flatId', label: 'Flat ID (Optional)', type: 'text' },
+      { name: 'visitorName', label: 'Visitor Name', type: 'text', required: true },
+      { name: 'visitorMobile', label: 'Visitor Mobile', type: 'text' },
+      { name: 'purpose', label: 'Purpose', type: 'text' },
+      { name: 'visitDate', label: 'Visit Date', type: 'datetime-local', required: true },
     ],
   },
   notices: {
@@ -161,9 +161,9 @@ const moduleConfigs = {
       { key: 'createdAt', label: 'Published' },
     ],
     fields: [
-      { name: 'title', label: 'Title', type: 'text', required: true, defaultValue: 'Water Cut' },
-      { name: 'content', label: 'Content', type: 'textarea', required: true, defaultValue: 'No water tomorrow' },
-      { name: 'validTill', label: 'Valid Till', type: 'date', defaultValue: '2024-12-31' },
+      { name: 'title', label: 'Title', type: 'text', required: true },
+      { name: 'content', label: 'Content', type: 'textarea', required: true },
+      { name: 'validTill', label: 'Valid Till', type: 'date' },
     ],
   },
   reports: {
@@ -180,12 +180,12 @@ const moduleConfigs = {
       { key: 'createdAt', label: 'Date' },
     ],
     fields: [
-      { name: 'billId', label: 'Bill ID (24-char)', type: 'text', required: true, defaultValue: '60b8d295f1d2c72b1c34567b' },
-      { name: 'flatId', label: 'Flat ID (24-char)', type: 'text', required: true, defaultValue: '60b8d295f1d2c72b1c34567a' },
-      { name: 'amountPaid', label: 'Amount Paid', type: 'number', required: true, defaultValue: '5000' },
-      { name: 'method', label: 'Payment Method', type: 'select', defaultValue: 'cash', options: ['cash', 'cheque', 'online'] },
-      { name: 'transactionRef', label: 'Transaction Reference', type: 'text', defaultValue: 'TXN001' },
-      { name: 'date', label: 'Date', type: 'date', required: true, defaultValue: '2024-12-31' },
+      { name: 'billId', label: 'Bill ID', type: 'text', required: true },
+      { name: 'flatId', label: 'Flat ID', type: 'text', required: true },
+      { name: 'amountPaid', label: 'Amount Paid', type: 'number', required: true },
+      { name: 'method', label: 'Payment Method', type: 'select', options: ['cash', 'cheque', 'online'] },
+      { name: 'transactionRef', label: 'Transaction Reference', type: 'text' },
+      { name: 'date', label: 'Date', type: 'date', required: true },
     ],
   },
 };
@@ -194,7 +194,7 @@ export function ModulePage({ module, societyId, society }) {
   const config = moduleConfigs[module];
   if (!config) return <div>Module not found</div>;
 
-  const { records, loading, error, refetch, createRecord } = useModuleData(module, societyId);
+  const { records, loading, error, refetch, createRecord } = useModuleData(module, societyId, config.loader, config.creator);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
