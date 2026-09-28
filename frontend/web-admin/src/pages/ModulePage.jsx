@@ -198,6 +198,17 @@ export function ModulePage({ module, societyId, society }) {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  if (!Array.isArray(records)) {
+    console.error(`CRASH AVERTED for ${module}: records is not an array. Value:`, records);
+    return (
+      <div className='module-error'>
+        <Icon name='alert-circle' />
+        <p>Invalid data format received from API for {config.title}</p>
+        <pre>{JSON.stringify(records, null, 2)}</pre>
+      </div>
+    );
+  }
+
   const filteredRecords = records.filter((record) => {
     if (!searchTerm) return true;
     return Object.values(record).some((val) =>

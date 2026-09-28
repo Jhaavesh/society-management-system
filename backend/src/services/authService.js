@@ -1,4 +1,4 @@
-﻿import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import { AuthenticationError, ValidationError } from "../errors/index.js";
@@ -36,3 +36,4 @@ export async function login(data, context) {
     },
   };
 }
+

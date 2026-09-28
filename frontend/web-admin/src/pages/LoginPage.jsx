@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.js';
 import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Input.jsx';
@@ -22,6 +22,7 @@ export default function LoginPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="auth-shell">
@@ -58,9 +59,6 @@ export default function LoginPage() {
             {busy ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
-        <button className="demo-link" onClick={() => window.location.href = '/?demo=true'}>
-          Preview without login
-        </button>
       </div>
     </div>
   );
