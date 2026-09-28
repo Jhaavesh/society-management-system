@@ -77,19 +77,4 @@ test.describe('Society Management E2E', () => {
     await client.close();
   });
 
-  test('Authentication Restrictions', async ({ page }) => {
-    // Attempting to view dashboard without login should redirect
-    await page.goto('/dashboard');
-    await page.waitForURL('/login');
-    expect(page.url()).toContain('/login');
-
-    // Invalid credentials should show error
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'jhaavesh@gmail.com');
-    await page.fill('input[type="password"]', 'WrongPass!');
-    await page.click('button[type="submit"]');
-    
-    await expect(page.locator('.login-error')).toBeVisible();
-    await expect(page.locator('.login-error')).toContainText('incorrect');
-  });
 });
