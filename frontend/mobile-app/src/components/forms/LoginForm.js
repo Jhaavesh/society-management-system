@@ -1,6 +1,7 @@
 // src/components/forms/LoginForm.js
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Ionicons } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../../utils/formatters';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -74,7 +75,7 @@ export function LoginForm({ onLogin, onPreview }) {
           <Ionicons name="arrow-forward" size={17} color="#fff" />
         </Button>
 
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {onPreview && (
           <TouchableOpacity style={styles.previewButton} onPress={onPreview}>

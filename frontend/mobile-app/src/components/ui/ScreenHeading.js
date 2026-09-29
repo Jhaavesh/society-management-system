@@ -5,9 +5,9 @@ import { Theme } from '../../utils/formatters';
 export function ScreenHeading({ eyebrow, title, subtitle, style }) {
   return (
     <View style={[styles.container, style]}>
-      {eyebrow && <Text style={styles.eyebrow}>{eyebrow}</Text>}
+      {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
       <Text style={styles.title}>{title}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
 }
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     color: Theme.ink,
     fontSize: 29,
     fontWeight: '700',
-    marginTop: eyebrow ? 6 : 0,
+    marginTop: 6,
   },
   subtitle: {
     color: Theme.muted,

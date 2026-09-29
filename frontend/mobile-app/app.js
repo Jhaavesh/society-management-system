@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, View, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { AuthProvider } from './src/context/AuthContext';
+import { useAuth } from './src/hooks/useAuth';
 import { TabNavigator } from './src/navigation/TabNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { getResidentData, createComplaint, createVisitor } from './src/services/api';
@@ -98,3 +99,6 @@ function AppContent() {
     </SafeAreaView>
   );
 }
+
+import { registerRootComponent } from 'expo';
+registerRootComponent(App);

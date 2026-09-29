@@ -40,20 +40,26 @@ export function TabNavigator({ session, data, onNavigate, onLogout }) {
         },
       })}
     >
-      <Tab.Screen name="Home" component={() => <HomeScreen data={data} onNavigate={onNavigate} />} />
-      <Tab.Screen name="Bills" component={() => <BillsScreen data={data} />} />
+      {(session?.user?.role === 'resident' || session?.user?.role === 'tenant' || !session?.user?.role) && (
+        <Tab.Screen name="Home" component={() => <HomeScreen data={data} onNavigate={onNavigate} />} />
+      )}
+      {(session?.user?.role === 'resident' || session?.user?.role === 'tenant' || session?.user?.role === 'accountant' || session?.user?.role === 'society_admin' || session?.user?.role === 'platform_admin' || !session?.user?.role) && (
+        <Tab.Screen name="Bills" component={() => <BillsScreen data={data} />} />
+      )}
       <Tab.Screen name="Notices" component={() => <NoticesScreen data={data} />} />
-      <Tab.Screen
-        name="Requests"
-        component={() => (
-          <RequestsScreen
-            session={session}
-            data={data}
-            onSubmitComplaint={handleSubmitComplaint}
-            onSubmitVisitor={handleSubmitVisitor}
-          />
-        )}
-      />
+      {(session?.user?.role === 'resident' || session?.user?.role === 'tenant' || session?.user?.role === 'security' || session?.user?.role === 'society_admin' || session?.user?.role === 'platform_admin' || !session?.user?.role) && (
+        <Tab.Screen
+          name="Requests"
+          component={() => (
+            <RequestsScreen
+              session={session}
+              data={data}
+              onSubmitComplaint={handleSubmitComplaint}
+              onSubmitVisitor={handleSubmitVisitor}
+            />
+          )}
+        />
+      )}
       <Tab.Screen
         name="Profile"
         component={() => <ProfileScreen session={session} data={data} onLogout={onLogout} />}

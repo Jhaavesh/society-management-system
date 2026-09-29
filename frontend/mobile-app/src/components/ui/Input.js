@@ -21,7 +21,7 @@ export function Input({
 }) {
   return (
     <View style={style}>
-      {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
+      {label ? <Text style={[styles.label, labelStyle]}>{label}</Text> : null}
       <TextInput
         style={[styles.input, error && styles.inputError, inputStyle]}
         value={value}
@@ -35,7 +35,7 @@ export function Input({
         autoCapitalize={autoCapitalize}
         autoCompleteType={autoCompleteType}
       />
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }

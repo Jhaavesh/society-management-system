@@ -6,8 +6,19 @@ function requireApiUrl() {
   return API_URL;
 }
 
+async function safeFetch(url, options) {
+  try {
+    return await fetch(url, options);
+  } catch (error) {
+    if (error.message.includes('Network request failed') || error.name === 'TypeError') {
+      throw new Error("Network error. Please check your internet connection and try again.");
+    }
+    throw error;
+  }
+}
+
 export async function login(email, password) {
-  const response = await fetch(`${requireApiUrl()}${API_PREFIX}/auth/login`, {
+  const response = await safeFetch(`${requireApiUrl()}${API_PREFIX}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
@@ -21,12 +32,12 @@ export async function getResidentData(token, societyId) {
   const baseUrl = requireApiUrl();
   const headers = { Authorization: `Bearer ${token}` };
   const [society, flat, bills, payments, notices, visitors] = await Promise.all([
-    fetch(`${baseUrl}${API_PREFIX}/societies/${societyId}`, { headers }).then(readResponse),
-    fetch(`${baseUrl}${API_PREFIX}/flats?societyId=${societyId}`, { headers }).then(readResponse).then((items) => items[0] || null),
-    fetch(`${baseUrl}${API_PREFIX}/maintenance?societyId=${societyId}`, { headers }).then(readResponse),
-    fetch(`${baseUrl}${API_PREFIX}/payments?societyId=${societyId}`, { headers }).then(readResponse),
-    fetch(`${baseUrl}${API_PREFIX}/notices?societyId=${societyId}`, { headers }).then(readResponse),
-    fetch(`${baseUrl}${API_PREFIX}/visitors?societyId=${societyId}`, { headers }).then(readResponse)
+    safeFetch(`${baseUrl}${API_PREFIX}/societies/${societyId}`, { headers }).then(readResponse),
+    safeFetch(`${baseUrl}${API_PREFIX}/flats?societyId=${societyId}`, { headers }).then(readResponse).then((items) => items[0] || null),
+    safeFetch(`${baseUrl}${API_PREFIX}/maintenance?societyId=${societyId}`, { headers }).then(readResponse),
+    safeFetch(`${baseUrl}${API_PREFIX}/payments?societyId=${societyId}`, { headers }).then(readResponse),
+    safeFetch(`${baseUrl}${API_PREFIX}/notices?societyId=${societyId}`, { headers }).then(readResponse),
+    safeFetch(`${baseUrl}${API_PREFIX}/visitors?societyId=${societyId}`, { headers }).then(readResponse)
   ]);
   return { society, flat, bills, payments, notices, visitors };
 }
@@ -40,12 +51,12 @@ export function createVisitor(token, societyId, flatId, visitorName, visitorMobi
 }
 
 async function writeResidentData(token, path, payload) {
-  const response = await fetch(`${requireApiUrl()}${API_PREFIX}${path}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+  const response = await safeFetch(`${requireApiUrl()}${API_PREFIX}${path}`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
   return readResponse(response);
 }
 
 async function readResponse(response) {
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body.message || "Unable to load resident data");
-  return body;
+  return body.data !== undefined ? body.data : body;
 }
