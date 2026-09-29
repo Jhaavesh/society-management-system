@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api.js';
 
-export function useModuleData(module, societyId, loader, creator) {
+export function useModuleData(module, societyId, loader, creator, updater, deleter) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -43,5 +43,30 @@ export function useModuleData(module, societyId, loader, creator) {
     return newRecord;
   }, [module, societyId]);
 
-  return { records, loading, error, refetch: fetchRecords, createRecord };
+  const updateRecord = useCallback(async (id, payload) => {
+    if (!updater) throw new Error('No updater for module');
+    if (module !== 'societies' && (!societyId || societyId === 'all')) throw new Error('Select a society first');
+    
+    const updatedRecord = module === 'societies' 
+      ? await api[updater](id, payload) 
+      : await api[updater](societyId, id, payload);
+      
+    setRecords((prev) => prev.map(r => r._id === id ? updatedRecord : r));
+    return updatedRecord;
+  }, [module, societyId]);
+
+  const deleteRecord = useCallback(async (id) => {
+    if (!deleter) throw new Error('No deleter for module');
+    if (module !== 'societies' && (!societyId || societyId === 'all')) throw new Error('Select a society first');
+    
+    if (module === 'societies') {
+      await api[deleter](id);
+    } else {
+      await api[deleter](societyId, id);
+    }
+      
+    setRecords((prev) => prev.filter(r => r._id !== id));
+  }, [module, societyId]);
+
+  return { records, loading, error, refetch: fetchRecords, createRecord, updateRecord, deleteRecord };
 }

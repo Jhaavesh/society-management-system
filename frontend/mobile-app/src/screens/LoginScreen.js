@@ -7,7 +7,7 @@ export function LoginScreen({ onLogin }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      <LoginForm onLogin={onLogin} onPreview={() => onLogin({ preview: true, user: { name: 'Preview Resident' } })} />
+      <LoginForm onLogin={onLogin} />
     </SafeAreaView>
   );
 }

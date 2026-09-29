@@ -2,11 +2,20 @@ import { useState } from 'react';
 import { Input } from '../ui/Input.jsx';
 import { Button } from '../ui/Button.jsx';
 
-export function RecordForm({ fields, onSubmit, onCancel }) {
+export function RecordForm({ fields, initialData, onSubmit, onCancel }) {
   const [formData, setFormData] = useState(() => {
     const initial = {};
     fields.forEach(f => {
-      if (f.defaultValue !== undefined) {
+      if (initialData && initialData[f.name] !== undefined) {
+        let value = initialData[f.name];
+        // Handle dates
+        if (f.type === 'date' && value) {
+          value = new Date(value).toISOString().split('T')[0];
+        } else if (f.type === 'datetime-local' && value) {
+          value = new Date(value).toISOString().slice(0, 16);
+        }
+        initial[f.name] = value;
+      } else if (f.defaultValue !== undefined) {
         initial[f.name] = f.defaultValue;
       }
     });

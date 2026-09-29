@@ -13,10 +13,15 @@ export function LoginForm({ onLogin, onPreview }) {
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async () => {
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
     setBusy(true);
     setError('');
     try {
-      await onLogin({ preview: true, user: { name: 'Preview Resident' } });
+      const session = await import('../../services/api').then(m => m.login(email, password));
+      await onLogin(session);
     } catch (requestError) {
       setError(requestError.message);
     } finally {

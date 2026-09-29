@@ -14,5 +14,6 @@ export function recordToRow(record, headers) {
     
     row[header.key] = value;
   }
+  row._original = record;
   return row;
 }

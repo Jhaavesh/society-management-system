@@ -57,12 +57,34 @@ test.describe('Society Management E2E', () => {
         const count = await createBtn.count();
         if (count > 0) {
           await createBtn.click();
-          // Ensure modal opens
           const modal = page.locator('.modal');
           await expect(modal).toBeVisible();
-          // Close modal
-          await page.locator('.modal-close').click();
-          await expect(modal).toBeHidden();
+          
+          if (mod === 'buildings') {
+            await page.fill('input[name="name"]', 'Test Building E2E');
+            await page.fill('input[name="floors"]', '10');
+            await page.click('button[type="submit"]');
+            await page.waitForTimeout(500); // wait for save
+            
+            // Check if it appears in table
+            await expect(page.locator('td', { hasText: 'Test Building E2E' })).toBeVisible();
+            
+            // Edit
+            await page.locator('tr', { hasText: 'Test Building E2E' }).locator('button:has-text("Edit")').click();
+            await page.fill('input[name="floors"]', '12');
+            await page.click('button[type="submit"]');
+            await page.waitForTimeout(500); // wait for update
+            
+            // Delete
+            page.once('dialog', dialog => dialog.accept());
+            await page.locator('tr', { hasText: 'Test Building E2E' }).locator('button:has-text("Delete")').click();
+            await page.waitForTimeout(500);
+            await expect(page.locator('td', { hasText: 'Test Building E2E' })).toBeHidden();
+          } else {
+            // Close modal
+            await page.locator('.modal-close').click();
+            await expect(modal).toBeHidden();
+          }
         }
       });
     }

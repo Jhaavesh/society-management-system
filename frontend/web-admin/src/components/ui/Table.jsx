@@ -1,4 +1,4 @@
-export function Table({ headers, rows, emptyMessage = 'No data', className = '' }) {
+export function Table({ headers, rows, emptyMessage = 'No data', className = '', onEdit, onDelete }) {
   if (!rows || rows.length === 0) {
     return (
       <div className='table-wrap'>
@@ -19,6 +19,7 @@ export function Table({ headers, rows, emptyMessage = 'No data', className = '' 
                 {header.label}
               </th>
             ))}
+            {(onEdit || onDelete) && <th style={{ textAlign: 'right' }}>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -29,6 +30,12 @@ export function Table({ headers, rows, emptyMessage = 'No data', className = '' 
                   {row[header.key]}
                 </td>
               ))}
+              {(onEdit || onDelete) && (
+                <td style={{ textAlign: 'right' }} data-label="Actions">
+                  {onEdit && <button className="btn-icon" onClick={() => onEdit(row._original)}>Edit</button>}
+                  {onDelete && <button className="btn-icon text-danger" onClick={() => onDelete(row._original)} style={{ marginLeft: '8px' }}>Delete</button>}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

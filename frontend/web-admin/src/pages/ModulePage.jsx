@@ -19,6 +19,8 @@ const moduleConfigs = {
     action: 'Add Society',
     loader: 'societies',
     creator: 'createSociety',
+    updater: 'updateSociety',
+    deleter: 'deleteSociety',
     headers: [
       { key: 'name', label: 'Name' },
       { key: 'address', label: 'Address' },
@@ -39,6 +41,8 @@ const moduleConfigs = {
     action: 'Add Building',
     loader: 'buildings',
     creator: 'createBuilding',
+    updater: 'updateBuilding',
+    deleter: 'deleteBuilding',
     headers: [
       { key: 'name', label: 'Name / Block' },
       { key: 'floors', label: 'Total Floors', align: 'center' },
@@ -54,6 +58,8 @@ const moduleConfigs = {
     action: 'Add Flat',
     loader: 'flats',
     creator: 'createFlat',
+    updater: 'updateFlat',
+    deleter: 'deleteFlat',
     headers: [
       { key: 'flatNumber', label: 'Flat Number' },
       { key: 'buildingId', label: 'Building ID' },
@@ -74,6 +80,8 @@ const moduleConfigs = {
     action: 'Add Resident',
     loader: 'residents',
     creator: 'createResident',
+    updater: 'updateResident',
+    deleter: 'deleteResident',
     headers: [
       { key: 'name', label: 'Name' },
       { key: 'email', label: 'Email' },
@@ -94,6 +102,8 @@ const moduleConfigs = {
     action: 'Create Bill',
     loader: 'bills',
     creator: 'createBill',
+    updater: 'updateBill',
+    deleter: 'deleteBill',
     headers: [
       { key: 'flatId', label: 'Flat ID' },
       { key: 'month', label: 'Month' },
@@ -116,6 +126,8 @@ const moduleConfigs = {
     action: 'File Complaint',
     loader: 'complaints',
     creator: 'createComplaint',
+    updater: 'updateComplaint',
+    deleter: 'deleteComplaint',
     headers: [
       { key: 'category', label: 'Category' },
       { key: 'flatId', label: 'Flat ID' },
@@ -135,6 +147,8 @@ const moduleConfigs = {
     action: 'Add Visitor',
     loader: 'visitors',
     creator: 'createVisitor',
+    updater: 'updateVisitor',
+    deleter: 'deleteVisitor',
     headers: [
       { key: 'visitorName', label: 'Visitor Name' },
       { key: 'flatId', label: 'Flat ID' },
@@ -155,6 +169,8 @@ const moduleConfigs = {
     action: 'Create Notice',
     loader: 'notices',
     creator: 'createNotice',
+    updater: 'updateNotice',
+    deleter: 'deleteNotice',
     headers: [
       { key: 'title', label: 'Title' },
       { key: 'validTill', label: 'Valid Till' },
@@ -172,6 +188,7 @@ const moduleConfigs = {
     action: 'Generate Report',
     loader: 'payments',
     creator: 'createPayment',
+    deleter: 'deletePayment',
     headers: [
       { key: 'billId', label: 'Bill ID' },
       { key: 'flatId', label: 'Flat ID' },
@@ -194,8 +211,9 @@ export function ModulePage({ module, societyId, society }) {
   const config = moduleConfigs[module];
   if (!config) return <div>Module not found</div>;
 
-  const { records, loading, error, refetch, createRecord } = useModuleData(module, societyId, config.loader, config.creator);
+  const { records, loading, error, refetch, createRecord, updateRecord, deleteRecord } = useModuleData(module, societyId, config.loader, config.creator, config.updater, config.deleter);
   const [showForm, setShowForm] = useState(false);
+  const [editRecord, setEditRecord] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!Array.isArray(records)) {
@@ -230,10 +248,30 @@ export function ModulePage({ module, societyId, society }) {
 
   const handleSubmit = async (formData) => {
     try {
-      await createRecord(formData);
+      if (editRecord) {
+        await updateRecord(editRecord._id, formData);
+      } else {
+        await createRecord(formData);
+      }
       setShowForm(false);
+      setEditRecord(null);
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  const handleEdit = (record) => {
+    setEditRecord(record);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (record) => {
+    if (window.confirm('Are you sure you want to delete this record?')) {
+      try {
+        await deleteRecord(record._id);
+      } catch (err) {
+        alert(err.message);
+      }
     }
   };
 
@@ -247,7 +285,7 @@ export function ModulePage({ module, societyId, society }) {
           <h1>{config.title}</h1>
           <p>{config.subtitle}</p>
         </div>
-        <Button className='primary' onClick={() => setShowForm(true)}>
+        <Button className='primary' onClick={() => { setEditRecord(null); setShowForm(true); }}>
           <Icon name='plus' /> {config.action}
         </Button>
       </div>
@@ -275,14 +313,17 @@ export function ModulePage({ module, societyId, society }) {
           headers={config.headers}
           rows={tableRows}
           emptyMessage='No records found'
+          onEdit={config.updater ? handleEdit : null}
+          onDelete={config.deleter ? handleDelete : null}
         />
       </Card>
 
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={config.action}>
+      <Modal isOpen={showForm} onClose={() => { setShowForm(false); setEditRecord(null); }} title={editRecord ? `Edit ${config.title}` : config.action}>
         <RecordForm
           fields={config.fields}
+          initialData={editRecord}
           onSubmit={handleSubmit}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => { setShowForm(false); setEditRecord(null); }}
         />
       </Modal>
     </div>
