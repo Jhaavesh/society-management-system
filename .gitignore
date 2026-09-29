@@ -7,3 +7,7 @@ npm-debug.log*
 .DS_Store
 error-*.png
 debug*.png
+
+# Playwright
+playwright-report/
+test-results/
