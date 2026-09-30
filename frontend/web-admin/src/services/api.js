@@ -1,4 +1,8 @@
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/+$/, "");
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+
+if (!API_URL && import.meta.env.PROD) {
+  console.warn("VITE_API_URL is not set. API calls may fail if backend is not on the same origin.");
+}
 const API_PREFIX = "/api/v1";
 
 function getToken() {
