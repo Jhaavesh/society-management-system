@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth.js';
 import { useModuleData } from '../hooks/useModuleData.js';
 import { formatCurrency, formatNumber, formatPercentage } from '../utils/formatters.js';
 import { formatDate, formatDateTime, getRelativeTime } from '../utils/date.js';
@@ -209,7 +210,33 @@ const moduleConfigs = {
 
 export function ModulePage({ module, societyId, society }) {
   const config = moduleConfigs[module];
+  const { session } = useAuth();
+  const userRole = session?.user?.role || 'resident';
+
   if (!config) return <div>Module not found</div>;
+
+  // Authorization check
+  const allowedRoles = {
+    societies: ['platform_admin'],
+    buildings: ['platform_admin', 'society_admin'],
+    flats: ['platform_admin', 'society_admin', 'resident'],
+    residents: ['platform_admin', 'society_admin'],
+    billing: ['platform_admin', 'society_admin', 'accountant', 'resident'],
+    complaints: ['platform_admin', 'society_admin', 'security', 'resident'],
+    visitors: ['platform_admin', 'society_admin', 'security', 'resident'],
+    notices: ['platform_admin', 'society_admin', 'resident'],
+    reports: ['platform_admin', 'society_admin', 'accountant'],
+  };
+
+  if (allowedRoles[module] && !allowedRoles[module].includes(userRole)) {
+    return (
+      <div className='module-error'>
+        <Icon name='alert-triangle' />
+        <h2>Access Denied</h2>
+        <p>Your account does not have access to this module.</p>
+      </div>
+    );
+  }
 
   const { records, loading, error, refetch, createRecord, updateRecord, deleteRecord } = useModuleData(module, societyId, config.loader, config.creator, config.updater, config.deleter);
   const [showForm, setShowForm] = useState(false);

@@ -34,9 +34,9 @@ export default function LoginPage() {
             <span>operations suite</span>
           </div>
         </div>
-        <p className="eyebrow">Admin access</p>
+        <p className="eyebrow">Sign in</p>
         <h1>Welcome back.</h1>
-        <p className="auth-copy">Sign in to manage live society data.</p>
+        <p className="auth-copy">Sign in to your SocietyOS account.</p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <Input
             label="Email address"
