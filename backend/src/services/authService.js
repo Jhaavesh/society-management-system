@@ -19,7 +19,7 @@ export async function login(data, context) {
     name: user.name,
     role: user.role,
     flatId: user.flatId?.toString() || null,
-    societyIds: user.societyIds.map(String),
+    societyId: user.societyId ? String(user.societyId) : null,
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
@@ -32,7 +32,7 @@ export async function login(data, context) {
       email: user.email,
       role: user.role,
       flatId: user.flatId,
-      societyIds: user.societyIds,
+      societyId: user.societyId,
     },
   };
 }

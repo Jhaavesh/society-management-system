@@ -18,10 +18,10 @@ const society = await Society.findOneAndUpdate(
   { name: "Greenfield Heights", city: "Gurugram", state: "Haryana", createdBy: user._id },
   { upsert: true, new: true }
 );
-// Ensure admin user has the society in their societyIds
+// Ensure admin user has the society in their societyId
 await User.updateOne(
   { _id: user._id },
-  { $addToSet: { societyIds: society._id } }
+  { $set: { societyId: society._id } }
 );
 console.log(`Seeded ${email} and ${society.name}. Set ADMIN_PASSWORD in .env before production.`);
 process.exit(0);

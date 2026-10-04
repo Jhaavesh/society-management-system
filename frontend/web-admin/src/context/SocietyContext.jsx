@@ -10,7 +10,7 @@ export function SocietyProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, session } = useAuth();
 
   const fetchSocieties = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -34,13 +34,17 @@ export function SocietyProvider({ children }) {
     setSelectedSocietyId(id);
   }, []);
 
-  const selectedSociety = selectedSocietyId === 'all'
+  // For non-platform admins, they should only ever have one society.
+  const isPlatformAdmin = session?.user?.role === 'platform_admin';
+  const effectiveSocietyId = isPlatformAdmin ? selectedSocietyId : (session?.user?.societyId || (societies.length > 0 ? societies[0]._id : 'all'));
+
+  const selectedSociety = effectiveSocietyId === 'all'
     ? null
-    : societies.find((s) => String(s._id || s.id) === selectedSocietyId);
+    : societies.find((s) => String(s._id || s.id) === String(effectiveSocietyId));
 
   const value = {
     societies,
-    selectedSocietyId,
+    selectedSocietyId: effectiveSocietyId,
     selectedSociety,
     loading,
     error,

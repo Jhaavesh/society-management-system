@@ -30,10 +30,10 @@ async function main() {
   const passwordHash = await bcrypt.hash('password123', 10);
   
   // Create Users
-  const platformAdmin = await User.create({ name: 'PA', email: 'rbac_pa@test.com', passwordHash, role: 'platform_admin', societyIds: [], active: true });
-  const adminSoc1 = await User.create({ name: 'A1', email: 'rbac_a1@test.com', passwordHash, role: 'society_admin', societyIds: [soc1._id], active: true });
-  const resSoc1 = await User.create({ name: 'R1', email: 'rbac_r1@test.com', passwordHash, role: 'resident', societyIds: [soc1._id], flatId: f1._id, active: true });
-  const resSoc2 = await User.create({ name: 'R2', email: 'rbac_r2@test.com', passwordHash, role: 'resident', societyIds: [soc2._id], flatId: f2._id, active: true });
+  const platformAdmin = await User.create({ name: 'PA', email: 'rbac_pa@test.com', passwordHash, role: 'platform_admin', societyId: null, active: true });
+  const adminSoc1 = await User.create({ name: 'A1', email: 'rbac_a1@test.com', passwordHash, role: 'society_admin', societyId: soc1._id, active: true });
+  const resSoc1 = await User.create({ name: 'R1', email: 'rbac_r1@test.com', passwordHash, role: 'resident', societyId: soc1._id, flatId: f1._id, active: true });
+  const resSoc2 = await User.create({ name: 'R2', email: 'rbac_r2@test.com', passwordHash, role: 'resident', societyId: soc2._id, flatId: f2._id, active: true });
   
   console.log('Test data generated. Run API tests now.');
   

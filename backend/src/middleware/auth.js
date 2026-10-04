@@ -25,13 +25,13 @@ export function requireAuth(req, res, next) {
  */
 export async function requireActiveUser(req, res, next) {
   try {
-    const user = await User.findOne({ _id: req.user.sub, active: true }).select("_id role societyIds flatId").lean();
+    const user = await User.findOne({ _id: req.user.sub, active: true }).select("_id role societyId flatId").lean();
     if (!user) {
       return res.status(403).json({ message: "Account is deactivated or not found" });
     }
     // Refresh critical fields from DB to prevent stale JWT claims
     req.user.role = user.role;
-    req.user.societyIds = user.societyIds.map(String);
+    req.user.societyId = user.societyId ? String(user.societyId) : null;
     req.user.flatId = user.flatId?.toString() || null;
     next();
   } catch {
@@ -49,7 +49,7 @@ export function requireRole(...allowedRoles) {
 export function requireSocietyAccess(req, res, next) {
   const societyId = req.params.societyId || req.query.societyId || req.body.societyId;
   if (!societyId) return res.status(400).json({ message: "societyId is required" });
-  if (req.user.role !== "platform_admin" && !req.user.societyIds?.map(String).includes(String(societyId))) {
+  if (req.user.role !== "platform_admin" && String(req.user.societyId) !== String(societyId)) {
     return res.status(403).json({ message: "You cannot access this society" });
   }
   req.societyId = societyId;

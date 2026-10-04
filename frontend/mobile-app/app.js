@@ -33,7 +33,7 @@ function AppContent() {
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    const societyId = session?.user?.societyIds?.[0];
+    const societyId = session?.user?.societyId;
     if (!session?.token || !societyId) return;
     getResidentData(session.token, societyId)
       .then(setData)
@@ -50,7 +50,7 @@ function AppContent() {
   };
 
   const handleSubmitComplaint = async (title, detail) => {
-    const societyId = session?.user?.societyIds?.[0];
+    const societyId = session?.user?.societyId;
     const flatId = session?.user?.flatId;
     if (!session?.token || !societyId || !flatId) throw new Error('Missing session data');
     await createComplaint(session.token, societyId, flatId, title, detail);
@@ -60,7 +60,7 @@ function AppContent() {
   };
 
   const handleSubmitVisitor = async (title, detail) => {
-    const societyId = session?.user?.societyIds?.[0];
+    const societyId = session?.user?.societyId;
     const flatId = session?.user?.flatId;
     if (!session?.token || !societyId || !flatId) throw new Error('Missing session data');
     await createVisitor(session.token, societyId, flatId, title, detail, new Date().toISOString());

@@ -19,14 +19,14 @@ export async function createSociety(data, context) {
   });
   await User.updateOne(
     { _id: context.user.sub },
-    { $addToSet: { societyIds: society._id } }
+    { $set: { societyId: society._id } }
   );
   return society;
 }
 
 export async function listSocieties(data, context) {
   const { page, limit, skip } = buildPagination(data);
-  const filter = context.user.role === "platform_admin" ? {} : { _id: { $in: context.user.societyIds } };
+  const filter = context.user.role === "platform_admin" ? {} : { _id: context.user.societyId };
   const [items, total] = await Promise.all([
     Society.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     Society.countDocuments(filter),
@@ -81,8 +81,8 @@ export async function deleteSociety(data, context) {
     throw new NotFoundError("Society not found");
   }
   await User.updateMany(
-    { societyIds: societyId },
-    { $pull: { societyIds: societyId } }
+    { societyId: societyId },
+    { $unset: { societyId: "" } }
   );
   return { success: true };
 }

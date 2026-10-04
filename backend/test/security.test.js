@@ -1,4 +1,4 @@
-﻿import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -50,7 +50,7 @@ test("login includes flatId and resident bill reads are flat-scoped", async () =
   assert.equal(response.body.data.length, 1);
   assert.equal(String(response.body.data[0].flatId._id || response.body.data[0].flatId), String(fixtures.flat._id));
 
-  const noFlatToken = token({ sub: new mongoose.Types.ObjectId(), role: "resident", societyIds: [fixtures.society._id], flatId: null });
+  const noFlatToken = token({ sub: new mongoose.Types.ObjectId(), role: "resident", societyId: fixtures.society._id, flatId: null });
   const forbidden = await request(app).get(`/api/v1/maintenance?societyId=${fixtures.society._id}`).set("Authorization", `Bearer ${noFlatToken}`);
   assert.equal(forbidden.status, 403);
 });
@@ -73,6 +73,20 @@ test("PATCH routes reject protected fields", async () => {
      const response = await request(app).patch(path).set("Authorization", `Bearer ${fixtures.managerToken}`).query({ societyId: String(fixtures.society._id) }).send(body);
     assert.equal(response.status, 400);
   }
+});
+
+test("deactivated user with old JWT is rejected", async () => {
+  const oldToken = fixtures.residentToken;
+  // Make a valid request first to verify the token works
+  const initial = await request(app).get(`/api/v1/maintenance?societyId=${fixtures.society._id}`).set("Authorization", `Bearer ${oldToken}`);
+  assert.equal(initial.status, 200);
+
+  // Deactivate user in DB
+  await User.updateOne({ _id: fixtures.resident._id }, { active: false });
+
+  // Make same request with the old JWT, it should now be rejected by requireActiveUser
+  const afterDeactivation = await request(app).get(`/api/v1/maintenance?societyId=${fixtures.society._id}`).set("Authorization", `Bearer ${oldToken}`);
+  assert.equal(afterDeactivation.status, 403);
 });
 
 test("payments support partial balances and reject overpaying or duplicate references", async () => {
@@ -102,9 +116,9 @@ async function createFixtures() {
   const flat = await Flat.create({ societyId: society._id, buildingId: building._id, flatNumber: "A-101", wing: "A" });
   const otherFlat = await Flat.create({ societyId: society._id, buildingId: building._id, flatNumber: "B-202", wing: "B" });
   const passwordHash = await bcrypt.hash("password", 4);
-  const resident = await User.create({ name: "Test Resident", email: "resident@example.com", passwordHash, role: "resident", societyIds: [society._id], flatId: flat._id });
-  const manager = await User.create({ name: "Test Manager", email: "manager@example.com", passwordHash, role: "society_admin", societyIds: [society._id] });
-  return { society, flat, otherFlat, resident, residentToken: token({ sub: resident._id, name: resident.name, role: resident.role, societyIds: [society._id], flatId: flat._id }), managerToken: token({ sub: manager._id, name: manager.name, role: manager.role, societyIds: [society._id] }) };
+  const resident = await User.create({ name: "Test Resident", email: "resident@example.com", passwordHash, role: "resident", societyId: society._id, flatId: flat._id });
+  const manager = await User.create({ name: "Test Manager", email: "manager@example.com", passwordHash, role: "society_admin", societyId: society._id });
+  return { society, flat, otherFlat, resident, residentToken: token({ sub: resident._id, name: resident.name, role: resident.role, societyId: society._id, flatId: flat._id }), managerToken: token({ sub: manager._id, name: manager.name, role: manager.role, societyId: society._id }) };
 }
 
-function token(payload) { return jwt.sign({ ...payload, sub: String(payload.sub), societyIds: payload.societyIds.map(String), flatId: payload.flatId ? String(payload.flatId) : null }, process.env.JWT_SECRET); }
+function token(payload) { return jwt.sign({ ...payload, sub: String(payload.sub), societyId: payload.societyId ? String(payload.societyId) : null, flatId: payload.flatId ? String(payload.flatId) : null }, process.env.JWT_SECRET); }

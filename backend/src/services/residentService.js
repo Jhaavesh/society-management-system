@@ -1,4 +1,4 @@
-﻿import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 import Flat from "../models/flat.js";
 import { buildPagination, paginatedResponse } from "../utils/pagination.js";
@@ -24,7 +24,7 @@ export async function createResident(data, context) {
     phone,
     flatId,
     role: "resident",
-    societyIds: [context.societyId],
+    societyId: context.societyId,
     passwordHash: await bcrypt.hash(password, 12),
   });
   await Flat.updateOne(
@@ -40,14 +40,14 @@ export async function listResidents(data, context) {
   }
   const { page, limit, skip } = buildPagination(data);
   const [items, total] = await Promise.all([
-    User.find({ societyIds: context.societyId, role: "resident", active: true })
+    User.find({ societyId: context.societyId, role: "resident", active: true })
       .select("name email phone flatId createdAt")
       .populate("flatId", "flatNumber wing")
       .sort({ name: 1 })
       .skip(skip)
       .limit(limit)
       .lean(),
-    User.countDocuments({ societyIds: context.societyId, role: "resident", active: true }),
+    User.countDocuments({ societyId: context.societyId, role: "resident", active: true }),
   ]);
   return paginatedResponse(items, total, page, limit);
 }
@@ -57,7 +57,7 @@ export async function getResident(data, context) {
   if (!residentId) {
     throw new ValidationError("residentId is required");
   }
-  const resident = await User.findOne({ _id: residentId, societyIds: context.societyId, role: "resident" })
+  const resident = await User.findOne({ _id: residentId, societyId: context.societyId, role: "resident" })
     .select("name email phone flatId createdAt")
     .populate("flatId", "flatNumber wing")
     .lean();
@@ -81,7 +81,7 @@ export async function updateResident(data, context) {
     throw new ValidationError("At least one editable field is required");
   }
   const resident = await User.findOneAndUpdate(
-    { _id: residentId, societyIds: context.societyId, role: "resident" },
+    { _id: residentId, societyId: context.societyId, role: "resident" },
     filteredUpdates,
     { new: true, runValidators: true }
   ).select("name email phone flatId createdAt").populate("flatId", "flatNumber wing");
@@ -103,7 +103,7 @@ export async function assignFlat(data, context) {
   if (flat.status === "occupied") {
     throw new ValidationError("Flat is already occupied");
   }
-  const resident = await User.findOne({ _id: residentId, societyIds: context.societyId, role: "resident" });
+  const resident = await User.findOne({ _id: residentId, societyId: context.societyId, role: "resident" });
   if (!resident) {
     throw new NotFoundError("Resident not found");
   }
@@ -114,7 +114,7 @@ export async function assignFlat(data, context) {
     );
   }
   resident.flatId = flatId;
-  resident.societyIds = [context.societyId];
+  resident.societyId = context.societyId;
   await resident.save();
   await Flat.updateOne(
     { _id: flatId },
@@ -128,7 +128,7 @@ export async function removeResident(data, context) {
   if (!residentId) {
     throw new ValidationError("residentId is required");
   }
-  const resident = await User.findOne({ _id: residentId, societyIds: context.societyId, role: "resident" });
+  const resident = await User.findOne({ _id: residentId, societyId: context.societyId, role: "resident" });
   if (!resident) {
     throw new NotFoundError("Resident not found");
   }

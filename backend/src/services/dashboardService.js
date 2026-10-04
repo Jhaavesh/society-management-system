@@ -14,7 +14,7 @@ export async function getDashboardKPIs(data, context) {
   }
   const [society, residents, homes, bills, paidBills, payments, openRequests] = await Promise.all([
     Society.findById(societyId).lean(),
-    User.countDocuments({ societyIds: societyId, role: "resident", active: true }),
+    User.countDocuments({ societyId: societyId, role: "resident", active: true }),
     Flat.countDocuments({ societyId }),
     MaintenanceBill.countDocuments({ societyId }),
     MaintenanceBill.countDocuments({ societyId, status: "paid" }),

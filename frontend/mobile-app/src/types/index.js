@@ -31,7 +31,7 @@ export const REQUEST_KINDS = ['complaint', 'visitor'];
  * @property {string} [user.email]
  * @property {string} [user.role]
  * @property {string} [user.flatId]
- * @property {string[]} [user.societyIds]
+ * @property {string} [user.societyId]
  */
 
 /**

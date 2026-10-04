@@ -25,7 +25,7 @@ async function seed() {
       passwordHash: await bcrypt.hash(password, 12), 
       role: "society_admin", 
       active: true,
-      societyIds: [society._id]
+      societyId: society._id
     },
     { upsert: true, new: true }
   );

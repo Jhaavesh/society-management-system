@@ -7,16 +7,16 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true, select: false },
   role: { type: String, enum: roles, default: 'resident' },
   phone: { type: String, trim: true },
-  societyIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Society' }],
+  societyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Society' },
   flatId: { type: mongoose.Schema.Types.ObjectId, ref: 'Flat' },
   active: { type: Boolean, default: true }
 }, { timestamps: true });
 
 // Indexes for query performance at scale
-userSchema.index({ societyIds: 1, role: 1 });
+userSchema.index({ societyId: 1, role: 1 });
 userSchema.index({ email: 1, active: 1 });
 userSchema.index({ flatId: 1 });
-userSchema.index({ societyIds: 1, active: 1 });
+userSchema.index({ societyId: 1, active: 1 });
 
 export { roles };
 export default mongoose.model('User', userSchema);

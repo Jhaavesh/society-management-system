@@ -20,14 +20,14 @@ test.describe('Mobile App Role-Based Isolation E2E', () => {
     // Add Resident User
     await db.collection('users').updateOne(
       { email: 'resident@mobile.test' },
-      { $set: { passwordHash: hashedPassword, role: 'resident', active: true, name: 'Mobile Resident', societyIds: [society._id] } },
+      { $set: { passwordHash: hashedPassword, role: 'resident', active: true, name: 'Mobile Resident', societyId: society._id } },
       { upsert: true }
     );
 
     // Add Accountant User
     await db.collection('users').updateOne(
       { email: 'accountant@mobile.test' },
-      { $set: { passwordHash: hashedPassword, role: 'accountant', active: true, name: 'Mobile Accountant', societyIds: [society._id] } },
+      { $set: { passwordHash: hashedPassword, role: 'accountant', active: true, name: 'Mobile Accountant', societyId: society._id } },
       { upsert: true }
     );
   });
