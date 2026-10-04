@@ -1,4 +1,5 @@
-﻿import Building from "../models/building.js";
+import Building from "../models/building.js";
+import { pickAllowedFields } from "../utils/fields.js";
 import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
 
@@ -28,7 +29,12 @@ export async function getBuilding(data, context) {
   if (!buildingId) {
     throw new ValidationError("buildingId is required");
   }
-  const building = await Building.findById(buildingId).lean();
+  // SECURITY: Filter by societyId to prevent cross-society data access
+  const filter = { _id: buildingId };
+  if (context.societyId) {
+    filter.societyId = context.societyId;
+  }
+  const building = await Building.findOne(filter).lean();
   if (!building) {
     throw new NotFoundError("Building not found");
   }
@@ -40,9 +46,22 @@ export async function updateBuilding(data, context) {
   if (!buildingId) {
     throw new ValidationError("buildingId is required");
   }
+  // SECURITY: Whitelist allowed fields to prevent field injection (e.g. overwriting societyId)
+  const { values, unknown } = pickAllowedFields(updates, ["name", "floors", "active"]);
+  if (unknown.length) {
+    throw new ValidationError(`Unsupported building fields: ${unknown.join(", ")}`);
+  }
+  if (!Object.keys(values).length) {
+    throw new ValidationError("At least one editable building field is required");
+  }
+  // SECURITY: Filter by societyId to prevent cross-society modification
+  const filter = { _id: buildingId };
+  if (context.societyId) {
+    filter.societyId = context.societyId;
+  }
   const building = await Building.findOneAndUpdate(
-    { _id: buildingId },
-    updates,
+    filter,
+    values,
     { new: true, runValidators: true }
   );
   if (!building) {
@@ -56,7 +75,12 @@ export async function deleteBuilding(data, context) {
   if (!buildingId) {
     throw new ValidationError("buildingId is required");
   }
-  const building = await Building.findByIdAndDelete(buildingId);
+  // SECURITY: Filter by societyId to prevent cross-society deletion
+  const filter = { _id: buildingId };
+  if (context.societyId) {
+    filter.societyId = context.societyId;
+  }
+  const building = await Building.findOneAndDelete(filter);
   if (!building) {
     throw new NotFoundError("Building not found");
   }

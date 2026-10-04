@@ -111,17 +111,21 @@ const paymentLimiter = rateLimit({
 app.get("/health", async (req, res) => {
   const dbStats = getConnectionStats();
   const isHealthy = dbStats.readyState === 1;
-  res.status(isHealthy ? 200 : 503).json({
+  const response = {
     ok: isHealthy,
     service: "society-os-api",
     version: process.env.npm_package_version || "0.1.0",
     timestamp: new Date().toISOString(),
     database: {
       connected: isHealthy,
-      host: dbStats.host,
-      name: dbStats.name,
     },
-  });
+  };
+  // SECURITY: Only expose DB details in development mode
+  if (process.env.NODE_ENV === "development") {
+    response.database.host = dbStats.host;
+    response.database.name = dbStats.name;
+  }
+  res.status(isHealthy ? 200 : 503).json(response);
 });
 
 // API routes with versioning

@@ -1,4 +1,5 @@
-﻿import Notice from "../models/notice.js";
+import Notice from "../models/notice.js";
+import { pickAllowedFields } from "../utils/fields.js";
 import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError } from "../errors/index.js";
 
@@ -52,9 +53,17 @@ export async function updateNotice(data, context) {
   if (!noticeId) {
     throw new ValidationError("noticeId is required");
   }
+  // SECURITY: Whitelist allowed fields to prevent field injection (e.g. overwriting societyId, publishedBy)
+  const { values, unknown } = pickAllowedFields(updates, ["title", "content", "validTill"]);
+  if (unknown.length) {
+    throw new ValidationError(`Unsupported notice fields: ${unknown.join(", ")}`);
+  }
+  if (!Object.keys(values).length) {
+    throw new ValidationError("At least one editable notice field is required");
+  }
   const notice = await Notice.findOneAndUpdate(
     { _id: noticeId, societyId: context.societyId },
-    updates,
+    values,
     { new: true, runValidators: true }
   );
   if (!notice) {

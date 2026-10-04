@@ -1,4 +1,4 @@
-﻿import Flat from "../models/flat.js";
+import Flat from "../models/flat.js";
 import Building from "../models/building.js";
 import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { NotFoundError, ValidationError, ConflictError } from "../errors/index.js";
@@ -48,7 +48,12 @@ export async function getFlat(data, context) {
   if (!flatId) {
     throw new ValidationError("flatId is required");
   }
-  const flat = await Flat.findById(flatId).populate("buildingId", "name").lean();
+  // SECURITY: Filter by societyId to prevent cross-society data access
+  const filter = { _id: flatId };
+  if (context.societyId) {
+    filter.societyId = context.societyId;
+  }
+  const flat = await Flat.findOne(filter).populate("buildingId", "name").lean();
   if (!flat) {
     throw new NotFoundError("Flat not found");
   }

@@ -1,4 +1,4 @@
-﻿import Society from "../models/society.js";
+import Society from "../models/society.js";
 import User from "../models/user.js";
 import { buildPagination, paginatedResponse } from "../utils/pagination.js";
 import { AuthorizationError, NotFoundError, ValidationError } from "../errors/index.js";
@@ -51,9 +51,18 @@ export async function updateSociety(data, context) {
   if (!societyId) {
     throw new ValidationError("societyId is required");
   }
+  // SECURITY: Whitelist allowed fields to prevent field injection (e.g. overwriting createdBy)
+  const allowedFields = ["name", "address", "city", "state", "pincode", "logoUrl", "active"];
+  const filteredUpdates = {};
+  for (const key of allowedFields) {
+    if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
+  }
+  if (!Object.keys(filteredUpdates).length) {
+    throw new ValidationError("At least one editable field is required");
+  }
   const society = await Society.findOneAndUpdate(
     { _id: societyId },
-    updates,
+    filteredUpdates,
     { new: true, runValidators: true }
   );
   if (!society) {

@@ -1,10 +1,10 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { listSocietiesController, createSocietyController, getSocietyController, updateSocietyController, deleteSocietyController } from "../controllers/index.js";
 import { validate, createSocietySchema, updateSocietySchema, societyIdParamSchema } from "../validators/index.js";
-import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSocietyAccess, requireActiveUser } from "../middleware/auth.js";
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAuth, requireActiveUser);
 
 router.get("/", listSocietiesController);
 router.post("/", requireRole("platform_admin"), validate(createSocietySchema), createSocietyController);

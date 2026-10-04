@@ -1,10 +1,10 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { listResidentsController, createResidentController, getResidentController, updateResidentController, assignFlatController, removeResidentController } from "../controllers/index.js";
 import { validate, createResidentSchema, residentQuerySchema } from "../validators/index.js";
-import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSocietyAccess, requireActiveUser } from "../middleware/auth.js";
 
 const router = Router();
-router.use(requireAuth, requireRole("platform_admin", "society_admin", "accountant"));
+router.use(requireAuth, requireActiveUser, requireRole("platform_admin", "society_admin", "accountant"));
 
 router.get("/", requireSocietyAccess, validate(residentQuerySchema), listResidentsController);
 router.post("/", requireSocietyAccess, validate(createResidentSchema), createResidentController);

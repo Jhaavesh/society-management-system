@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { listBuildingsController, createBuildingController, getBuildingController, updateBuildingController, deleteBuildingController } from "../controllers/index.js";
 import { validate, createBuildingSchema, updateBuildingSchema, buildingIdParamSchema, societyIdParamSchema } from "../validators/index.js";
-import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSocietyAccess, requireActiveUser } from "../middleware/auth.js";
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAuth, requireActiveUser);
 const managers = ["platform_admin", "society_admin", "accountant"];
 
 router.get("/:societyId", requireSocietyAccess, validate(societyIdParamSchema), listBuildingsController);

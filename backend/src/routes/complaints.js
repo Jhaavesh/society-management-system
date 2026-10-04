@@ -1,10 +1,10 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { listComplaintsController, createComplaintController, getComplaintController, updateComplaintController, deleteComplaintController } from "../controllers/index.js";
 import { validate, createComplaintSchema, updateComplaintSchema, complaintIdParamSchema, complaintQuerySchema } from "../validators/index.js";
-import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSocietyAccess, requireActiveUser } from "../middleware/auth.js";
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAuth, requireActiveUser);
 const managers = ["platform_admin", "society_admin", "security", "accountant"];
 
 router.get("/", requireSocietyAccess, validate(complaintQuerySchema), listComplaintsController);

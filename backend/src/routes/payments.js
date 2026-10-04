@@ -1,10 +1,10 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { listPaymentsController, createPaymentController, getPaymentController, deletePaymentController } from "../controllers/index.js";
 import { validate, createPaymentSchema, paymentQuerySchema } from "../validators/index.js";
-import { requireAuth, requireRole, requireSocietyAccess } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSocietyAccess, requireActiveUser } from "../middleware/auth.js";
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAuth, requireActiveUser);
 const managers = ["platform_admin", "society_admin", "accountant"];
 
 router.get("/", requireSocietyAccess, validate(paymentQuerySchema), listPaymentsController);
