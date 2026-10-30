@@ -183,3 +183,4 @@ test("AUTH: Health endpoint is public and indicates database status", async () =
   assert.equal(res.body.ok, true);
   assert.equal(res.body.database.connected, true);
 });
+

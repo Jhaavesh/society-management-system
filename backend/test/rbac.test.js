@@ -314,3 +314,4 @@ test("RBAC: Dashboard endpoint access allows admin, accountant, security, but de
   assert.equal(resRes.status, 403);
   assert.match(resRes.body.message, /insufficient permissions/i);
 });
+

@@ -15,7 +15,7 @@ test.describe('Society Management E2E', () => {
     const client = new MongoClient(mongoUri);
     await client.connect();
     const db = client.db();
-    
+
     const hashedPassword = bcrypt.hashSync('Test1234!', 10);
     await db.collection('users').updateOne(
       { email: 'jhaavesh@gmail.com' },
@@ -37,7 +37,7 @@ test.describe('Society Management E2E', () => {
 
     // 3. Module Tests
     const modules = ['societies', 'buildings', 'flats', 'residents', 'billing', 'complaints', 'visitors', 'notices', 'reports'];
-    
+
     for (const mod of modules) {
       await test.step(`Verify module: ${mod}`, async () => {
         await page.goto(`/${mod}`);
@@ -63,22 +63,22 @@ test.describe('Society Management E2E', () => {
           await createBtn.click();
           const modal = page.locator('.modal');
           await expect(modal).toBeVisible();
-          
+
           if (mod === 'buildings') {
             await page.fill('input[name="name"]', 'Test Building E2E');
             await page.fill('input[name="floors"]', '10');
             await page.click('button[type="submit"]');
             await page.waitForTimeout(500); // wait for save
-            
+
             // Check if it appears in table
             await expect(page.locator('td', { hasText: 'Test Building E2E' })).toBeVisible();
-            
+
             // Edit
             await page.locator('tr', { hasText: 'Test Building E2E' }).locator('button:has-text("Edit")').click();
             await page.fill('input[name="floors"]', '12');
             await page.click('button[type="submit"]');
             await page.waitForTimeout(500); // wait for update
-            
+
             // Delete
             page.once('dialog', dialog => dialog.accept());
             await page.locator('tr', { hasText: 'Test Building E2E' }).locator('button:has-text("Delete")').click();
