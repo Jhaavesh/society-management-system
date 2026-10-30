@@ -1,12 +1,11 @@
-﻿// src/hooks/useResidentData.js
+// src/hooks/useResidentData.js
 import { useState, useEffect, useCallback } from 'react';
 import { getResidentData } from '../services/api';
-import { ResidentData } from '../types';
 
 export function useResidentData(token, societyId) {
-  const [data, setData] = useState<ResidentData | null>(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
 
   const fetchData = useCallback(async () => {
     if (!token || !societyId) {

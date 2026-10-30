@@ -20,7 +20,10 @@ let mongo;
 let fixtures;
 
 before(async () => {
-  mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+  mongo = await MongoMemoryReplSet.create({
+    replSet: { count: 1 },
+    instanceOpts: [{ launchTimeout: 60000 }]
+  });
   await mongoose.connect(mongo.getUri());
   await Promise.all([MaintenanceBill.init(), Payment.init()]);
 });
@@ -32,7 +35,9 @@ beforeEach(async () => {
 
 after(async () => {
   await mongoose.disconnect();
-  await mongo.stop();
+  if (mongo) {
+    await mongo.stop();
+  }
 });
 
 test("login includes flatId and resident bill reads are flat-scoped", async () => {

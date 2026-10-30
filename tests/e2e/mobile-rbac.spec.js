@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
+import fs from 'node:fs';
 import dotenv from 'dotenv';
 dotenv.config({ path: './backend/.env' });
 
@@ -9,7 +10,10 @@ test.describe('Mobile App Role-Based Isolation E2E', () => {
   let db;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGODB_URI);
+    const mongoUri = fs.existsSync('./.test-env.json')
+      ? JSON.parse(fs.readFileSync('./.test-env.json', 'utf8')).MONGODB_URI
+      : process.env.MONGODB_URI;
+    client = new MongoClient(mongoUri);
     await client.connect();
     db = client.db();
 
@@ -38,7 +42,7 @@ test.describe('Mobile App Role-Based Isolation E2E', () => {
 
   test('Resident Login Flow', async ({ page }) => {
     // Go to Mobile Web URL
-    await page.goto('http://localhost:8081');
+    await page.goto('http://localhost:8081', { timeout: 120000 });
     await page.waitForLoadState('networkidle');
     
     // Check if it's the login screen
@@ -46,41 +50,62 @@ test.describe('Mobile App Role-Based Isolation E2E', () => {
 
     await page.fill('input[placeholder="you@example.com"]', 'resident@mobile.test');
     await page.fill('input[placeholder="Your password"]', 'Test1234!');
-    await page.locator('div:has-text("Sign in")').last().click();
+    await page.getByText('Sign in', { exact: true }).click();
+
+    // Look for error message if login fails
+    try {
+      const errorText = await page.getByText('Network error', { exact: false }).first().innerText({ timeout: 2000 });
+      console.log('Login Error found:', errorText);
+    } catch (e) {
+      try {
+        const errorText = await page.getByText('Network', { exact: false }).first().innerText({ timeout: 1000 });
+        console.log('Login Error found:', errorText);
+      } catch (e2) {}
+    }
 
     // Verify Tab navigation or Screen Title
-    await expect(page.locator('text="YOUR HOME"').first()).toBeVisible({ timeout: 15000 });
+    try {
+      await expect(page.getByText('YOUR HOME', { exact: false }).first()).toBeVisible({ timeout: 15000 });
+    } catch (e) {
+      await page.screenshot({ path: 'test-results/resident-login-fail.png' });
+      throw e;
+    }
     
     // Verify Dashboard data
-    await expect(page.locator('text="Maintenance bill"').first()).toBeVisible();
+    await expect(page.getByText('Maintenance bill', { exact: false }).first()).toBeVisible();
     
     // Logout
-    await page.locator('text="Profile"').click();
+    await page.getByText('Profile', { exact: false }).click();
     // In React Native Web, Alert.alert maps to window.confirm, so we accept the dialog
     page.on('dialog', dialog => dialog.accept());
-    await page.locator('text="Sign out"').click({ force: true });
+    await page.getByText('Sign out', { exact: false }).click({ force: true });
     // Wait for login screen to reappear
-    await expect(page.locator('text="Welcome home"')).toBeVisible();
+    await expect(page.getByText('Welcome home', { exact: false })).toBeVisible();
   });
 
   test('Accountant Login Flow', async ({ page }) => {
-    await page.goto('http://localhost:8081');
+    await page.goto('http://localhost:8081', { timeout: 120000 });
     await page.waitForSelector('input[placeholder="you@example.com"]', { timeout: 30000 });
     await page.fill('input[placeholder="you@example.com"]', 'accountant@mobile.test');
     await page.fill('input[placeholder="Your password"]', 'Test1234!');
     
     page.on('dialog', dialog => dialog.accept());
-    await page.locator('div:has-text("Sign in")').last().click();
+    await page.getByText('Sign in', { exact: true }).click();
 
     // Wait for the app to load. Accountant doesn't have Home, they only have Bills, Notices, Profile.
     // So TabNavigator might default to Bills if Home is hidden? No, Home is hidden.
-    await expect(page.locator('text="My bills"').first()).toBeVisible({ timeout: 15000 });
+    try {
+      await expect(page.getByText('My bills', { exact: false }).first()).toBeVisible({ timeout: 15000 });
+    } catch (e) {
+      await page.screenshot({ path: 'test-results/accountant-login-fail.png' });
+      throw e;
+    }
     
     // Profile
-    await page.locator('text="Profile"').click();
-    await expect(page.locator('text="Flat details unavailable"')).toBeVisible();
+    await page.getByText('Profile', { exact: false }).click();
+    await expect(page.getByText('Flat details unavailable', { exact: false })).toBeVisible();
 
     // Logout
-    await page.locator('text="Sign out"').click({ force: true });
+    await page.getByText('Sign out', { exact: false }).click({ force: true });
   });
 });

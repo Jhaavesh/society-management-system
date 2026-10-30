@@ -5,13 +5,26 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "com.societyos.resident",
-      "permissions": ["INTERNET", "VIBRATE"],
+      "permissions": [
+        "INTERNET",
+        "VIBRATE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d751698f-d50e-4933-b35b-41b4daf9f2f0"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

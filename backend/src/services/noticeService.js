@@ -64,7 +64,7 @@ export async function updateNotice(data, context) {
   const notice = await Notice.findOneAndUpdate(
     { _id: noticeId, societyId: context.societyId },
     values,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!notice) {
     throw new NotFoundError("Notice not found");

@@ -1,8 +1,8 @@
-﻿import MaintenanceBill from "../models/maintenancebill.js";
+import MaintenanceBill from "../models/maintenancebill.js";
 import Flat from "../models/flat.js";
 import { pickAllowedFields } from "../utils/fields.js";
 import { buildPagination, paginatedResponse } from "../utils/pagination.js";
-import { NotFoundError, ValidationError, AuthorizationError } from "../errors/index.js";
+import { NotFoundError, ValidationError, AuthorizationError, ConflictError } from "../errors/index.js";
 
 export async function createBill(data, context) {
   const { flatId, month, year, amount, dueDate } = data;
@@ -11,6 +11,15 @@ export async function createBill(data, context) {
   }
   if (!await Flat.exists({ _id: flatId, societyId: context.societyId })) {
     throw new ValidationError("Flat does not belong to this society");
+  }
+  const existing = await MaintenanceBill.findOne({
+    societyId: context.societyId,
+    flatId,
+    month,
+    year
+  });
+  if (existing) {
+    throw new ConflictError("A maintenance bill for this flat and period already exists");
   }
   return MaintenanceBill.create({
     flatId,
@@ -79,7 +88,7 @@ export async function updateBill(data, context) {
   const bill = await MaintenanceBill.findOneAndUpdate(
     { _id: billId, societyId: context.societyId },
     values,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!bill) {
     throw new NotFoundError("Bill not found");

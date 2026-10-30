@@ -79,7 +79,7 @@ export async function updateComplaint(data, context) {
   const complaint = await Complaint.findOneAndUpdate(
     { _id: complaintId, societyId: context.societyId },
     values,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!complaint) {
     throw new NotFoundError("Complaint not found");

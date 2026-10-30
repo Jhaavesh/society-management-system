@@ -63,7 +63,7 @@ export async function updateSociety(data, context) {
   const society = await Society.findOneAndUpdate(
     { _id: societyId },
     filteredUpdates,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!society) {
     throw new NotFoundError("Society not found");

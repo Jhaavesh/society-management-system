@@ -62,7 +62,7 @@ export async function updateBuilding(data, context) {
   const building = await Building.findOneAndUpdate(
     filter,
     values,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!building) {
     throw new NotFoundError("Building not found");

@@ -7,7 +7,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node src/scripts/seed.js",
-    "test": "node --test test/security.test.js"
+    "test": "node --test --test-concurrency=1 test/security.test.js test/auth.test.js test/tenant-isolation.test.js test/rbac.test.js test/api-crud.test.js"
   },
   "engines": {
     "node": ">=20"

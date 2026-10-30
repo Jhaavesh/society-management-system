@@ -83,7 +83,7 @@ export async function updateResident(data, context) {
   const resident = await User.findOneAndUpdate(
     { _id: residentId, societyId: context.societyId, role: "resident" },
     filteredUpdates,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   ).select("name email phone flatId createdAt").populate("flatId", "flatNumber wing");
   if (!resident) {
     throw new NotFoundError("Resident not found");

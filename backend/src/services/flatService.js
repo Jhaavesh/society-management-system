@@ -12,6 +12,10 @@ export async function createFlat(data, context) {
   if (!building) {
     throw new ValidationError("Building does not belong to this society");
   }
+  const existing = await Flat.findOne({ societyId, buildingId, flatNumber: String(flatNumber).trim() });
+  if (existing) {
+    throw new ConflictError("Flat number already exists in this building");
+  }
   try {
     return await Flat.create({ societyId, buildingId, flatNumber, floor, wing });
   } catch (error) {
@@ -74,7 +78,7 @@ export async function updateFlat(data, context) {
   const flat = await Flat.findOneAndUpdate(
     { _id: flatId, societyId: context.societyId },
     updates,
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!flat) {
     throw new NotFoundError("Flat not found");

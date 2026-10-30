@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
+import fs from 'node:fs';
 import dotenv from 'dotenv';
 dotenv.config({ path: './backend/.env' });
 
@@ -8,7 +9,10 @@ test.describe('Society Management E2E', () => {
   test('Complete Flow: Login to Logout across all modules', async ({ page }) => {
     test.setTimeout(120000);
     // 1. Prepare database
-    const client = new MongoClient(process.env.MONGODB_URI);
+    const mongoUri = fs.existsSync('./.test-env.json')
+      ? JSON.parse(fs.readFileSync('./.test-env.json', 'utf8')).MONGODB_URI
+      : process.env.MONGODB_URI;
+    const client = new MongoClient(mongoUri);
     await client.connect();
     const db = client.db();
     

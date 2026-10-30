@@ -95,6 +95,8 @@ function AppContent() {
         session={session}
         data={data}
         onLogout={handleLogout}
+        onSubmitComplaint={handleSubmitComplaint}
+        onSubmitVisitor={handleSubmitVisitor}
       />
     </SafeAreaView>
   );

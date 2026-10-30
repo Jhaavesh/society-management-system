@@ -82,7 +82,7 @@ export async function updateVisitor(data, context) {
   const visitor = await Visitor.findOneAndUpdate(
     { _id: visitorId, societyId: context.societyId },
     { ...values, approvedBy: context.user.sub },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!visitor) {
     throw new NotFoundError("Visitor entry not found");

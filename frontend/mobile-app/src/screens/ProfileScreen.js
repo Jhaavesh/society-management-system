@@ -1,4 +1,4 @@
-﻿// src/screens/ProfileScreen.js
+// src/screens/ProfileScreen.js
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Theme, formatDate, initials } from '../utils/formatters';
 import { ScreenHeading } from '../components/ui/ScreenHeading';
@@ -8,8 +8,8 @@ import { Icon } from '../components/ui/Icon';
 import { Ionicons } from '@expo/vector-icons';
 
 export function ProfileScreen({ session, data, onLogout }) {
-  const user = session.user || {};
-  const flat = data?.flat;
+  const user = session?.user || {};
+  const flat = user.flatId ? data?.flat : null;
 
   const handleLogout = () => {
     if (Platform.OS === 'web') { if (window.confirm('Are you sure you want to sign out?')) onLogout(); } else { Alert.alert('Sign out', 'Are you sure you want to sign out?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: onLogout }]); }
@@ -23,7 +23,7 @@ export function ProfileScreen({ session, data, onLogout }) {
         <View style={styles.profileHeader}>
           <Avatar name={user.name} size={80} bgColor={Theme.blue} fontSize={24} />
           <Text style={styles.profileName}>{user.name || 'Resident'}</Text>
-          <Text style={styles.profileRole}>{user.role || 'resident'} {flat ? '�' : ''}</Text>
+          <Text style={styles.profileRole}>{user.role || 'resident'} {flat ? '•' : ''}</Text>
           {user.email && <Text style={styles.profileEmail}>{user.email}</Text>}
         </View>
       </Card>

@@ -11,13 +11,13 @@ import { StyleSheet } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
-export function TabNavigator({ session, data, onNavigate, onLogout }) {
+export function TabNavigator({ session, data, onNavigate, onLogout, onSubmitComplaint, onSubmitVisitor }) {
   const handleSubmitComplaint = async (title, detail) => {
-    // API call will be handled by parent or context
+    if (onSubmitComplaint) await onSubmitComplaint(title, detail);
   };
 
   const handleSubmitVisitor = async (title, detail) => {
-    // API call will be handled by parent or context
+    if (onSubmitVisitor) await onSubmitVisitor(title, detail);
   };
 
   return (

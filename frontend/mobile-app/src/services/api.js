@@ -43,7 +43,7 @@ export async function getResidentData(token, societyId) {
 }
 
 export function createComplaint(token, societyId, flatId, category, description) {
-  return writeResidentData(token, "/complaints", { societyId, flatId, category, description, priority: "medium" });
+  return writeResidentData(token, "/complaints", { societyId, flatId, category, description, priority: "normal" });
 }
 
 export function createVisitor(token, societyId, flatId, visitorName, visitorMobile, visitDate) {

@@ -11,3 +11,4 @@ debug*.png
 # Playwright
 playwright-report/
 test-results/
+.test-env.json
